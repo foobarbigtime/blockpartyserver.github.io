@@ -385,6 +385,185 @@
       font-weight: 900;
     }
 
+    .multiplayer-card {
+      background: rgba(255,255,255,0.95);
+      border: 6px solid #222;
+      padding: 1rem;
+      box-shadow: 9px 9px 0 rgba(0,0,0,0.25);
+    }
+
+    .join-world-form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      align-items: center;
+      margin: 0.8rem 0 1rem;
+    }
+
+    .join-world-form input {
+      flex: 1 1 240px;
+      padding: 0.75rem;
+      border: 4px solid #222;
+      font-size: 1rem;
+      font-weight: 900;
+      box-shadow: inset 3px 3px 0 rgba(0,0,0,0.12);
+    }
+
+    .world-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 260px;
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .world-stage {
+      position: relative;
+      min-height: 420px;
+      overflow: hidden;
+      border: 6px solid #222;
+      background:
+        linear-gradient(#7ec8ff 0 58%, #45b83d 58% 68%, #8b5a2b 68% 100%);
+      box-shadow: inset 0 0 0 4px rgba(255,255,255,0.25);
+      touch-action: none;
+    }
+
+    .world-stage::before {
+      content: "";
+      position: absolute;
+      inset: auto 0 0 0;
+      height: 64px;
+      background: repeating-linear-gradient(90deg, rgba(0,0,0,0.14) 0 2px, transparent 2px 52px);
+      pointer-events: none;
+    }
+
+    .steve-player {
+      position: absolute;
+      width: 42px;
+      height: 74px;
+      transform: translate(-50%, -100%);
+      transition: left 0.08s linear, top 0.08s linear;
+      z-index: 3;
+    }
+
+    .steve-name {
+      position: absolute;
+      left: 50%;
+      bottom: 78px;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      background: rgba(0,0,0,0.75);
+      color: white;
+      border: 2px solid rgba(255,255,255,0.7);
+      padding: 0.12rem 0.35rem;
+      font-size: 0.78rem;
+      font-weight: 900;
+      pointer-events: none;
+    }
+
+    .steve-head,
+    .steve-body,
+    .steve-arm,
+    .steve-leg {
+      position: absolute;
+      border: 3px solid rgba(0,0,0,0.35);
+      image-rendering: pixelated;
+    }
+
+    .steve-head {
+      left: 9px;
+      top: 0;
+      width: 24px;
+      height: 24px;
+      background: #c58b5b;
+    }
+
+    .steve-head::before {
+      content: "";
+      position: absolute;
+      left: 5px;
+      top: 8px;
+      width: 4px;
+      height: 4px;
+      background: #222;
+      box-shadow: 10px 0 #222, 5px 7px #7a3f26;
+    }
+
+    .steve-body {
+      left: 8px;
+      top: 24px;
+      width: 26px;
+      height: 28px;
+      background: #26a6c8;
+    }
+
+    .steve-arm {
+      top: 27px;
+      width: 10px;
+      height: 30px;
+      background: #c58b5b;
+    }
+
+    .steve-arm.left { left: 0; }
+    .steve-arm.right { right: 0; }
+
+    .steve-leg {
+      top: 52px;
+      width: 13px;
+      height: 22px;
+      background: #2c4f9c;
+    }
+
+    .steve-leg.left { left: 8px; }
+    .steve-leg.right { right: 8px; }
+
+    .steve-player.local .steve-name {
+      background: #ffd84d;
+      color: #222;
+      border-color: #222;
+    }
+
+    .world-sidebar {
+      background: #222;
+      color: white;
+      border: 5px solid #111;
+      padding: 0.85rem;
+      box-shadow: 6px 6px 0 rgba(0,0,0,0.25);
+    }
+
+    .world-sidebar h3 {
+      margin: 0 0 0.5rem;
+    }
+
+    .player-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 0.4rem;
+    }
+
+    .player-list li {
+      background: rgba(255,255,255,0.12);
+      border: 2px solid rgba(255,255,255,0.25);
+      padding: 0.35rem;
+      font-weight: 900;
+      word-break: break-word;
+    }
+
+    .mobile-controls {
+      display: none;
+      grid-template-columns: repeat(3, 52px);
+      grid-template-rows: repeat(3, 52px);
+      gap: 0.3rem;
+      justify-content: center;
+      margin-top: 0.8rem;
+    }
+
+    .mobile-controls button:nth-child(1) { grid-column: 2; grid-row: 1; }
+    .mobile-controls button:nth-child(2) { grid-column: 1; grid-row: 2; }
+    .mobile-controls button:nth-child(3) { grid-column: 3; grid-row: 2; }
+    .mobile-controls button:nth-child(4) { grid-column: 2; grid-row: 3; }
+
     .join-steps {
       counter-reset: step;
       list-style: none;
@@ -589,6 +768,18 @@
     }
 
     @media (max-width: 790px) {
+      .world-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .world-stage {
+        min-height: 360px;
+      }
+
+      .mobile-controls {
+        display: grid;
+      }
+
       .topbar {
         align-items: flex-start;
         flex-direction: column;
@@ -623,7 +814,8 @@
       <span>Block Party Server</span>
     </div>
     <nav aria-label="Main navigation">
-      <a href="#play">Play</a>
+      <a href="#world">World</a>
+      <a href="#play">Mining Game</a>
       <a href="#adventure">Adventure</a>
       <a href="#join">Join</a>
       <a href="#contact">Invite</a>
@@ -679,6 +871,46 @@
             <h3>Family Friendly</h3>
             <p>Clear rules, friendly play, and a server culture built around kindness and fun.</p>
           </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="world">
+      <div class="wrap">
+        <h2 class="section-title pixel-text">Live Block World</h2>
+        <div class="multiplayer-card">
+          <span class="badge">Multiplayer</span>
+          <h3>Spawn Your Character</h3>
+          <p>
+            Enter a gamer tag or nickname only. Do not use your real name.
+            When you join, other people on the website can see your character moving around.
+          </p>
+
+          <div class="join-world-form">
+            <input id="gamerTagInput" maxlength="20" autocomplete="off" placeholder="Enter gamer tag" aria-label="Enter gamer tag" />
+            <button class="big-btn" type="button" id="joinWorldBtn">Join World</button>
+            <button class="small-btn" type="button" id="leaveWorldBtn">Leave</button>
+          </div>
+
+          <div class="world-layout">
+            <div class="world-stage" id="worldStage" tabindex="0" aria-label="Live multiplayer block world">
+            </div>
+            <aside class="world-sidebar">
+              <h3 class="pixel-text">Players Online</h3>
+              <ul class="player-list" id="playerList">
+                <li>No players yet</li>
+              </ul>
+              <p><strong>Move:</strong> WASD or arrow keys.</p>
+              <p><strong>Goal:</strong> chase your friends, invent your own game, and keep it friendly.</p>
+            </aside>
+          </div>
+
+          <div class="mobile-controls" aria-label="Mobile movement controls">
+            <button class="small-btn" type="button" data-move="up">▲</button>
+            <button class="small-btn" type="button" data-move="left">◀</button>
+            <button class="small-btn" type="button" data-move="right">▶</button>
+            <button class="small-btn" type="button" data-move="down">▼</button>
+          </div>
         </div>
       </div>
     </section>
@@ -939,6 +1171,196 @@
     }
 
     buildGrid();
+  </script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getDatabase, ref, set, onValue, onDisconnect, remove } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDDVOIriZ8AjCFL6AjVFOZ-tVkTpKJG7ho",
+      authDomain: "blockpartyserver-e3ec9.firebaseapp.com",
+      databaseURL: "https://blockpartyserver-e3ec9-default-rtdb.firebaseio.com",
+      projectId: "blockpartyserver-e3ec9",
+      storageBucket: "blockpartyserver-e3ec9.firebasestorage.app",
+      messagingSenderId: "413005046576",
+      appId: "1:413005046576:web:97f03931bdd0d04c29b9ef5",
+      measurementId: "G-FY7KRXN6Q"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const stage = document.getElementById("worldStage");
+    const playerList = document.getElementById("playerList");
+    const gamerTagInput = document.getElementById("gamerTagInput");
+    const joinWorldBtn = document.getElementById("joinWorldBtn");
+    const leaveWorldBtn = document.getElementById("leaveWorldBtn");
+    const playersRef = ref(db, "players");
+
+    const myIdKey = "blockPartyPlayerId";
+    const myNameKey = "blockPartyPlayerName";
+    let myId = localStorage.getItem(myIdKey) || crypto.randomUUID();
+    localStorage.setItem(myIdKey, myId);
+
+    let joined = false;
+    let myPlayerRef = null;
+    let myPosition = { x: 50, y: 78 };
+    let keys = new Set();
+
+    gamerTagInput.value = localStorage.getItem(myNameKey) || "";
+
+    function cleanName(name) {
+      return String(name || "")
+        .replace(/[^a-zA-Z0-9_ -]/g, "")
+        .replace(new RegExp("\\s+", "g"), " ")
+        .trim()
+        .slice(0, 20);
+    }
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function playerData() {
+      return {
+        name: cleanName(gamerTagInput.value),
+        x: Math.round(myPosition.x),
+        y: Math.round(myPosition.y),
+        lastSeen: Date.now()
+      };
+    }
+
+    async function joinWorld() {
+      const name = cleanName(gamerTagInput.value);
+      if (!name) {
+        showNote("Enter a gamer tag first. No real names.");
+        gamerTagInput.focus();
+        return;
+      }
+
+      localStorage.setItem(myNameKey, name);
+      gamerTagInput.value = name;
+      joined = true;
+      myPlayerRef = ref(db, `players/${myId}`);
+      await set(myPlayerRef, playerData());
+      await onDisconnect(myPlayerRef).remove();
+      stage.focus();
+      showNote(`${name} joined the world!`);
+    }
+
+    async function leaveWorld() {
+      if (myPlayerRef) await remove(myPlayerRef);
+      joined = false;
+      showNote("You left the world.");
+    }
+
+    function renderPlayers(players) {
+      stage.querySelectorAll(".steve-player").forEach(el => el.remove());
+      const now = Date.now();
+      const activeEntries = Object.entries(players || {}).filter(([, player]) => {
+        return player && player.name && typeof player.x === "number" && typeof player.y === "number" && now - Number(player.lastSeen || 0) < 45000;
+      });
+
+      if (activeEntries.length === 0) {
+        playerList.innerHTML = "<li>No players yet</li>";
+      } else {
+        playerList.innerHTML = activeEntries
+          .sort((a, b) => String(a[1].name).localeCompare(String(b[1].name)))
+          .map(([id, player]) => `<li>${escapeHtml(player.name)}${id === myId ? " ⭐" : ""}</li>`)
+          .join("");
+      }
+
+      for (const [id, player] of activeEntries) {
+        const steve = document.createElement("div");
+        steve.className = `steve-player${id === myId ? " local" : ""}`;
+        steve.style.left = `${clamp(player.x, 4, 96)}%`;
+        steve.style.top = `${clamp(player.y, 28, 96)}%`;
+        steve.innerHTML = `
+          <div class="steve-name">${escapeHtml(player.name)}</div>
+          <div class="steve-head"></div>
+          <div class="steve-body"></div>
+          <div class="steve-arm left"></div>
+          <div class="steve-arm right"></div>
+          <div class="steve-leg left"></div>
+          <div class="steve-leg right"></div>
+        `;
+        stage.appendChild(steve);
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    let lastWrite = 0;
+    async function movePlayer(dx, dy) {
+      if (!joined || !myPlayerRef) return;
+      myPosition.x = clamp(myPosition.x + dx, 4, 96);
+      myPosition.y = clamp(myPosition.y + dy, 35, 96);
+      const now = Date.now();
+      if (now - lastWrite > 70) {
+        lastWrite = now;
+        await set(myPlayerRef, playerData());
+      }
+    }
+
+    function movementLoop() {
+      let dx = 0;
+      let dy = 0;
+      if (keys.has("arrowleft") || keys.has("a")) dx -= 1.3;
+      if (keys.has("arrowright") || keys.has("d")) dx += 1.3;
+      if (keys.has("arrowup") || keys.has("w")) dy -= 1.3;
+      if (keys.has("arrowdown") || keys.has("s")) dy += 1.3;
+      if (dx || dy) movePlayer(dx, dy);
+      requestAnimationFrame(movementLoop);
+    }
+
+    window.addEventListener("keydown", (event) => {
+      const key = event.key.toLowerCase();
+      if (["arrowleft", "arrowright", "arrowup", "arrowdown", "w", "a", "s", "d"].includes(key)) {
+        keys.add(key);
+        if (document.activeElement !== gamerTagInput) event.preventDefault();
+      }
+    });
+
+    window.addEventListener("keyup", (event) => {
+      keys.delete(event.key.toLowerCase());
+    });
+
+    document.querySelectorAll("[data-move]").forEach(button => {
+      button.addEventListener("click", () => {
+        const direction = button.dataset.move;
+        if (direction === "up") movePlayer(0, -4);
+        if (direction === "down") movePlayer(0, 4);
+        if (direction === "left") movePlayer(-4, 0);
+        if (direction === "right") movePlayer(4, 0);
+      });
+    });
+
+    joinWorldBtn.addEventListener("click", joinWorld);
+    leaveWorldBtn.addEventListener("click", leaveWorld);
+    gamerTagInput.addEventListener("keydown", event => {
+      if (event.key === "Enter") joinWorld();
+    });
+
+    onValue(playersRef, snapshot => {
+      renderPlayers(snapshot.val() || {});
+    });
+
+    window.addEventListener("beforeunload", () => {
+      if (myPlayerRef) remove(myPlayerRef);
+    });
+
+    window.setInterval(() => {
+      if (joined && myPlayerRef) set(myPlayerRef, playerData());
+    }, 10000);
+
+    movementLoop();
   </script>
 </body>
 </html>
