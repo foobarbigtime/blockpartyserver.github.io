@@ -1,0 +1,41 @@
+name: Realm Invite Request
+description: Request access to the Block Party Realm
+title: "Realm Invite Request"
+labels: ["realm-invite"]
+body:
+  - type: input
+    id: minecraft-username
+    attributes:
+      label: Minecraft username
+      description: What is your Minecraft username?
+      placeholder: ExamplePlayer123
+    validations:
+      required: true
+
+  - type: textarea
+    id: connection
+    attributes:
+      label: How do you know us?
+      description: Do not include full names. Example: school friend, cousin, neighbour, family friend.
+      placeholder: I am a school friend / cousin / neighbour / family friend.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: edition
+    attributes:
+      label: Minecraft edition
+      options:
+        - Java
+        - Bedrock
+        - Not sure
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy reminder
+      options:
+        - label: I understand I should not post my full name, phone number, address, age, school, or private information.
+          required: true

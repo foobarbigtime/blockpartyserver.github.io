@@ -1,63 +1,879 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Tiny Platformer (Mobile)</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Block Party Server</title>
   <style>
-    :root { --bg: #0e1326; --fg: #e6e6f0; --accent: #6ee7ff; }
-    html, body { height: 100%; margin: 0; background: radial-gradient(1200px 600px at 50% 0%, #1b2552, var(--bg)); color: var(--fg); font-family: system-ui, sans-serif; display:grid; place-items:center; overflow:hidden; touch-action:none; }
-    #frame { position: relative; display:inline-block; box-shadow:0 10px 40px rgba(0,0,0,.6); border-radius:16px; overflow:hidden; }
-    canvas { display:block; image-rendering:pixelated; width:min(96vw, 1280px); height:calc(min(96vw, 1280px) * (9/16)); max-height:90vh; border:2px solid rgba(255,255,255,.08); touch-action:none; }
-    .hud { position:absolute; inset:0; display:flex; align-items:flex-start; justify-content:space-between; pointer-events:none; padding:10px 14px; font-weight:600; text-shadow:0 2px 4px rgba(0,0,0,.5); font-size:14px; }
-    a.btn { position:absolute; right:10px; bottom:10px; pointer-events:auto; text-decoration:none; color:var(--bg); background:var(--accent); padding:8px 12px; border-radius:999px; font-weight:700; font-size:14px; }
-    .controls { position:absolute; left:0; right:0; bottom:8px; display:none; justify-content:center; gap:12px; pointer-events:auto; padding:0 10px; }
-    .cbtn { font: 900 18px system-ui, sans-serif; width:64px; height:64px; border-radius:16px; border:none; background:rgba(255,255,255,.92); color:#0e1326; box-shadow:0 8px 24px rgba(0,0,0,.35); }
-    .cbtn:active { transform: translateY(2px); }
-    .cbtn.jump { width:90px; }
-    @media (pointer: coarse), (max-width: 900px) { .controls { display:flex; } a.btn { display:none; } }
+    :root {
+      --sky: #7ec8ff;
+      --deep-sky: #3b8eea;
+      --grass: #45b83d;
+      --grass-dark: #2f8429;
+      --dirt: #8b5a2b;
+      --dirt-dark: #5d371c;
+      --stone: #8c8c8c;
+      --wood: #9b642f;
+      --gold: #ffd84d;
+      --diamond: #5de1ff;
+      --redstone: #ff3b3b;
+      --ink: #1e1e1e;
+      --panel: rgba(255,255,255,0.92);
+      --shadow: rgba(0,0,0,0.28);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Trebuchet MS", Arial, sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(var(--sky), var(--deep-sky) 48%, var(--grass) 48%, var(--grass) 55%, var(--dirt) 55%, var(--dirt-dark));
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .pixel-text {
+      letter-spacing: 1px;
+      text-shadow: 3px 3px 0 rgba(0,0,0,0.25);
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.75rem 1rem;
+      background: rgba(32, 64, 32, 0.92);
+      border-bottom: 5px solid rgba(0,0,0,0.25);
+      color: white;
+      backdrop-filter: blur(8px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      font-weight: 900;
+      font-size: clamp(1.1rem, 3vw, 1.7rem);
+    }
+
+    .mini-block {
+      width: 34px;
+      height: 34px;
+      image-rendering: pixelated;
+      background:
+        linear-gradient(#53c64b 0 35%, #8b5a2b 35% 100%);
+      border: 3px solid rgba(0,0,0,0.35);
+      box-shadow: 3px 3px 0 rgba(0,0,0,0.25);
+    }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 0.5rem;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: 800;
+      padding: 0.45rem 0.7rem;
+      border: 2px solid rgba(255,255,255,0.25);
+      background: rgba(0,0,0,0.18);
+      box-shadow: 2px 2px 0 rgba(0,0,0,0.25);
+    }
+
+    nav a:hover,
+    nav a:focus {
+      background: var(--gold);
+      color: #222;
+      transform: translateY(-2px);
+    }
+
+    .hero {
+      position: relative;
+      min-height: 86vh;
+      display: grid;
+      place-items: center;
+      padding: 3rem 1rem 7rem;
+      overflow: hidden;
+    }
+
+    .cloud {
+      position: absolute;
+      display: grid;
+      grid-template-columns: repeat(5, 34px);
+      grid-template-rows: repeat(2, 34px);
+      gap: 0;
+      opacity: 0.9;
+      animation: floatCloud linear infinite;
+    }
+
+    .cloud span {
+      background: white;
+      border: 2px solid rgba(0,0,0,0.08);
+    }
+
+    .cloud span:nth-child(1),
+    .cloud span:nth-child(5),
+    .cloud span:nth-child(6),
+    .cloud span:nth-child(10) {
+      opacity: 0;
+    }
+
+    .cloud.one { top: 16%; left: -220px; animation-duration: 42s; }
+    .cloud.two { top: 28%; left: -360px; animation-duration: 62s; transform: scale(0.75); }
+    .cloud.three { top: 8%; left: -500px; animation-duration: 78s; transform: scale(1.2); }
+
+    @keyframes floatCloud {
+      from { translate: 0 0; }
+      to { translate: calc(100vw + 650px) 0; }
+    }
+
+    .hero-card {
+      position: relative;
+      z-index: 2;
+      max-width: 980px;
+      width: min(100%, 980px);
+      background: var(--panel);
+      border: 6px solid #222;
+      box-shadow: 12px 12px 0 var(--shadow);
+      padding: clamp(1rem, 4vw, 2.25rem);
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 8vw, 6rem);
+      margin: 0 0 0.5rem;
+      color: #243f16;
+      line-height: 0.95;
+    }
+
+    .hero p {
+      max-width: 760px;
+      margin: 0 auto 1.5rem;
+      font-size: clamp(1.05rem, 2.4vw, 1.45rem);
+      line-height: 1.45;
+    }
+
+    .server-address {
+      display: inline-flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.8rem;
+      background: #202020;
+      color: white;
+      border: 5px solid #444;
+      box-shadow: inset 0 0 0 3px #111, 6px 6px 0 rgba(0,0,0,0.25);
+      font-size: clamp(1rem, 2.7vw, 1.5rem);
+      font-weight: 900;
+      word-break: break-word;
+    }
+
+    .copy-btn,
+    .big-btn,
+    .small-btn {
+      cursor: pointer;
+      border: 4px solid #222;
+      background: var(--gold);
+      color: #222;
+      font-weight: 900;
+      box-shadow: 4px 4px 0 rgba(0,0,0,0.35);
+      transition: transform 0.08s ease, box-shadow 0.08s ease;
+    }
+
+    .copy-btn {
+      padding: 0.55rem 0.8rem;
+      font-size: 0.95rem;
+    }
+
+    .big-btn {
+      display: inline-block;
+      margin-top: 1.2rem;
+      padding: 0.85rem 1.1rem;
+      font-size: 1.1rem;
+      text-decoration: none;
+    }
+
+    .small-btn {
+      padding: 0.45rem 0.65rem;
+      font-size: 0.9rem;
+    }
+
+    button:hover,
+    .big-btn:hover,
+    button:focus,
+    .big-btn:focus {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0 rgba(0,0,0,0.35);
+    }
+
+    .ground {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: grid;
+      grid-template-columns: repeat(24, 1fr);
+      height: 124px;
+      z-index: 3;
+    }
+
+    .ground div {
+      border: 1px solid rgba(0,0,0,0.18);
+      background: linear-gradient(#4fc544 0 34%, #8b5a2b 34% 100%);
+    }
+
+    .section {
+      padding: 4rem 1rem;
+    }
+
+    .wrap {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+    }
+
+    .section-title {
+      display: inline-block;
+      background: rgba(255,255,255,0.94);
+      border: 5px solid #222;
+      padding: 0.6rem 1rem;
+      box-shadow: 7px 7px 0 rgba(0,0,0,0.25);
+      font-size: clamp(1.7rem, 5vw, 3rem);
+      margin: 0 0 1.5rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 1rem;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 5px solid #222;
+      padding: 1rem;
+      box-shadow: 7px 7px 0 rgba(0,0,0,0.24);
+      min-height: 170px;
+    }
+
+    .card h3 {
+      margin: 0 0 0.45rem;
+      font-size: 1.4rem;
+    }
+
+    .card p,
+    .card li {
+      line-height: 1.45;
+      font-size: 1rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.45rem;
+      margin-bottom: 0.6rem;
+      background: #222;
+      color: white;
+      border: 3px solid rgba(255,255,255,0.25);
+      font-weight: 900;
+    }
+
+    .block-game {
+      background: rgba(15, 31, 20, 0.86);
+      color: white;
+      border-top: 8px solid rgba(0,0,0,0.3);
+      border-bottom: 8px solid rgba(0,0,0,0.3);
+    }
+
+    .game-panel {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 1.25rem;
+      align-items: start;
+    }
+
+    .game-area {
+      background: #111;
+      border: 6px solid #050505;
+      padding: 0.7rem;
+      box-shadow: inset 0 0 0 4px #333, 9px 9px 0 rgba(0,0,0,0.35);
+    }
+
+    .block-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 5px;
+    }
+
+    .block {
+      aspect-ratio: 1;
+      min-height: 42px;
+      border: 3px solid rgba(0,0,0,0.35);
+      cursor: pointer;
+      position: relative;
+      image-rendering: pixelated;
+      transition: transform 0.05s ease, filter 0.12s ease;
+    }
+
+    .block:hover,
+    .block:focus {
+      filter: brightness(1.15);
+      transform: scale(1.05);
+      outline: 3px solid var(--gold);
+    }
+
+    .grass { background: linear-gradient(#54c947 0 36%, #8a5728 36%); }
+    .stone { background: linear-gradient(135deg, #9b9b9b 0 25%, #777 25% 50%, #aaa 50% 75%, #858585 75%); }
+    .wood { background: repeating-linear-gradient(90deg, #7b491f 0 8px, #a56a31 8px 16px); }
+    .diamond { background: linear-gradient(135deg, #b8f7ff, #43d7f5, #168da3); }
+    .gold { background: linear-gradient(135deg, #fff3a1, #ffd84d, #c79300); }
+    .redstone { background: linear-gradient(135deg, #ff8b8b, #ff3030, #8e0000); }
+
+    .broken {
+      opacity: 0.25;
+      transform: scale(0.88);
+      filter: grayscale(0.8);
+    }
+
+    .scoreboard {
+      background: rgba(255,255,255,0.95);
+      color: #222;
+      border: 6px solid #222;
+      padding: 1rem;
+      box-shadow: 9px 9px 0 rgba(0,0,0,0.35);
+    }
+
+    .score-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      border-bottom: 3px dashed #333;
+      padding: 0.55rem 0;
+      font-weight: 900;
+    }
+
+    .inventory {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .slot {
+      min-height: 72px;
+      background: #333;
+      color: white;
+      border: 4px solid #111;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 0.35rem;
+      font-weight: 900;
+    }
+
+    .join-steps {
+      counter-reset: step;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 0.8rem;
+    }
+
+    .join-steps li {
+      counter-increment: step;
+      display: grid;
+      grid-template-columns: 52px 1fr;
+      align-items: center;
+      gap: 0.7rem;
+      background: rgba(255,255,255,0.94);
+      border: 4px solid #222;
+      padding: 0.7rem;
+      box-shadow: 5px 5px 0 rgba(0,0,0,0.2);
+    }
+
+    .join-steps li::before {
+      content: counter(step);
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      background: var(--diamond);
+      border: 4px solid #222;
+      font-weight: 900;
+    }
+
+    .mob-zone {
+      position: relative;
+      min-height: 220px;
+      background: linear-gradient(#8fd4ff 0 45%, #51bf43 45% 56%, #8b5a2b 56%);
+      border: 6px solid #222;
+      overflow: hidden;
+      box-shadow: 9px 9px 0 rgba(0,0,0,0.28);
+    }
+
+    .mob {
+      position: absolute;
+      bottom: 38px;
+      width: 72px;
+      height: 96px;
+      cursor: pointer;
+      animation: wander 9s linear infinite alternate;
+    }
+
+    .mob::before,
+    .mob::after {
+      content: "";
+      position: absolute;
+      background: #37b24d;
+      border: 4px solid #113d19;
+    }
+
+    .mob::before {
+      width: 56px;
+      height: 56px;
+      left: 8px;
+      top: 0;
+      box-shadow: inset 10px 0 rgba(255,255,255,0.12);
+    }
+
+    .mob::after {
+      width: 44px;
+      height: 36px;
+      left: 14px;
+      top: 56px;
+    }
+
+    .eyes {
+      position: absolute;
+      top: 18px;
+      left: 20px;
+      width: 10px;
+      height: 10px;
+      background: #111;
+      box-shadow: 22px 0 #111, 11px 18px #111;
+      z-index: 2;
+    }
+
+    @keyframes wander {
+      from { left: 5%; }
+      to { left: calc(100% - 90px); }
+    }
+
+    .floating-note {
+      position: fixed;
+      left: 50%;
+      bottom: 1rem;
+      transform: translateX(-50%);
+      background: #222;
+      color: white;
+      border: 4px solid var(--gold);
+      padding: 0.7rem 1rem;
+      z-index: 100;
+      box-shadow: 5px 5px 0 rgba(0,0,0,0.3);
+      display: none;
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .floating-note.show {
+      display: block;
+      animation: pop 0.25s ease;
+    }
+
+    @keyframes pop {
+      from { transform: translateX(-50%) scale(0.85); }
+      to { transform: translateX(-50%) scale(1); }
+    }
+
+    .rules-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.75rem;
+      padding: 0;
+      list-style: none;
+    }
+
+    .rules-list li {
+      background: rgba(255,255,255,0.94);
+      border: 4px solid #222;
+      padding: 0.85rem;
+      box-shadow: 5px 5px 0 rgba(0,0,0,0.22);
+      font-weight: 800;
+    }
+
+    footer {
+      background: #1d321a;
+      color: white;
+      text-align: center;
+      padding: 2rem 1rem;
+      border-top: 8px solid rgba(0,0,0,0.35);
+    }
+
+    .footer-note {
+      max-width: 760px;
+      margin: 0.5rem auto 0;
+      opacity: 0.85;
+      line-height: 1.45;
+      font-size: 0.95rem;
+    }
+
+    .particle {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      pointer-events: none;
+      background: var(--gold);
+      border: 1px solid rgba(0,0,0,0.25);
+      animation: particle 700ms ease-out forwards;
+      z-index: 99;
+    }
+
+    @keyframes particle {
+      to {
+        opacity: 0;
+        transform: translate(var(--x), var(--y)) rotate(180deg) scale(0.3);
+      }
+    }
+
+    @media (max-width: 790px) {
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      nav {
+        justify-content: flex-start;
+      }
+
+      .game-panel {
+        grid-template-columns: 1fr;
+      }
+
+      .block-grid {
+        grid-template-columns: repeat(6, 1fr);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+      }
+    }
   </style>
 </head>
 <body>
-  <div id="frame">
-    <canvas id="game" width="960" height="540" aria-label="Platformer game"></canvas>
-    <div class="hud">
-      <div class="left" id="status">Score: 0 / 6</div>
-      <div class="right">←/→ move • ↑/Space jump • R restart</div>
+  <header class="topbar">
+    <div class="brand">
+      <div class="mini-block" aria-hidden="true"></div>
+      <span>Block Party Server</span>
     </div>
-    <div class="controls" aria-label="Mobile controls">
-      <button id="btnLeft" class="cbtn">◀</button>
-      <button id="btnJump" class="cbtn jump">⤒</button>
-      <button id="btnRight" class="cbtn">▶</button>
-    </div>
-    <a href="#" class="btn" id="resetBtn">Restart</a>
-  </div>
-<script>
-(() => {
-  const canvas=document.getElementById('game'); const ctx=canvas.getContext('2d');
-  const statusEl=document.getElementById('status'); const resetBtn=document.getElementById('resetBtn');
-  const btnLeft=document.getElementById('btnLeft'); const btnRight=document.getElementById('btnRight'); const btnJump=document.getElementById('btnJump');
-  const W=canvas.width,H=canvas.height; const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
-  const aabb=(a,b)=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
-  const rect=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h)}; const circle=(x,y,r,c)=>{ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=c;ctx.fill()};
-  let world,input,lastTime; function makeLevel(){const platforms=[{x:0,y:H-40,w:W,h:40}]; const coins=[{x:100,y:H-60,r:10,taken:false}]; const player={x:20,y:H-72,w:24,h:32,vx:0,vy:0,onGround:false,facing:1,jumpCount:0,maxJumps:1}; return{platforms,coins,player,score:0,goal:coins.length,state:'playing'};}
-  function reset(){world=makeLevel();input={left:false,right:false,up:false};lastTime=performance.now();}
-  const KEY={LEFT:["ArrowLeft","a"],RIGHT:["ArrowRight","d"],JUMP:["ArrowUp"," ","w"]};
-  addEventListener('keydown',e=>{if(KEY.LEFT.includes(e.key))input.left=true;if(KEY.RIGHT.includes(e.key))input.right=true;if(KEY.JUMP.includes(e.key)){input.up=true;attemptJump();}if(e.key==='r')reset();});
-  addEventListener('keyup',e=>{if(KEY.LEFT.includes(e.key))input.left=false;if(KEY.RIGHT.includes(e.key))input.right=false;if(KEY.JUMP.includes(e.key))input.up=false;});
-  function bindHold(btn,onDown,onUp){if(!btn)return;const d=e=>{e.preventDefault();onDown();};const u=e=>{e.preventDefault();onUp();};btn.addEventListener('pointerdown',d,{passive:false});btn.addEventListener('pointerup',u,{passive:false});btn.addEventListener('pointerleave',u,{passive:false});btn.addEventListener('pointercancel',u,{passive:false});}
-  bindHold(btnLeft,()=>input.left=true,()=>input.left=false);
-  bindHold(btnRight,()=>input.right=true,()=>input.right=false);
-  if(btnJump){btnJump.addEventListener('pointerdown',e=>{e.preventDefault();input.up=true;attemptJump();},{passive:false});btnJump.addEventListener('pointerup',e=>{e.preventDefault();input.up=false;},{passive:false});}
-  resetBtn.onclick=()=>reset();
-  function attemptJump(){const p=world.player;if(world.state!=='playing')return;if(p.onGround||p.jumpCount<p.maxJumps){p.vy=-10.5;p.onGround=false;p.jumpCount++;}}
-  const GRAVITY=0.6,ACCEL=0.6,MAXSPEED=4.1,AIR=0.9,GROUND=0.8;
-  function moveAndCollide(p,solids){p.x+=p.vx;for(const s of solids){if(aabb(p,s)){if(p.vx>0)p.x=s.x-p.w;else if(p.vx<0)p.x=s.x+s.w;p.vx=0;}}p.y+=p.vy;p.onGround=false;for(const s of solids){if(aabb(p,s)){if(p.vy>0){p.y=s.y-p.h;p.vy=0;p.onGround=true;p.jumpCount=0;}else if(p.vy<0){p.y=s.y+s.h;p.vy=0;}}}}
-  function update(dt){const w=world,p=w.player;if(w.state!=='playing')return;if(input.left)p.vx-=p.onGround?ACCEL:ACCEL*0.6;if(input.right)p.vx+=p.onGround?ACCEL:ACCEL*0.6;p.vx*=p.onGround?GROUND:AIR;p.vx=clamp(p.vx,-MAXSPEED,MAXSPEED);p.vy+=GRAVITY;p.vy=Math.min(p.vy,14);moveAndCollide(p,w.platforms);for(const c of w.coins){if(!c.taken){const dx=p.x+p.w/2-c.x,dy=p.y+p.h/2-c.y;if(dx*dx+dy*dy<(c.r+Math.max(p.w,p.h)/3)**2){c.taken=true;w.score++;}}}if(w.score>=w.goal)w.state='won';if(p.y>H+80)w.state='dead';statusEl.textContent=`Score: ${w.score} / ${w.goal}`;}
-  function draw(){const w=world,p=w.player;ctx.fillStyle='#0e153a';ctx.fillRect(0,0,W,H);for(const s of w.platforms)rect(s.x,s.y,s.w,s.h,'#2a335e');for(const c of w.coins)if(!c.taken)circle(c.x,c.y,c.r,'#ffd166');rect(p.x,p.y,p.w,p.h,'#6ee7ff');if(w.state!=='playing'){ctx.fillStyle='rgba(0,0,0,.45)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#fff';ctx.font='bold 24px sans-serif';ctx.textAlign='center';ctx.fillText(w.state==='won'?'You Win!':'Game Over',W/2,H/2);}}
-  function loop(t){const dt=clamp(t-lastTime,0,34);lastTime=t;if(world.state==='playing')update(dt);draw();requestAnimationFrame(loop);}
-  reset();requestAnimationFrame(loop);
-})();
-</script>
+    <nav aria-label="Main navigation">
+      <a href="#play">Play</a>
+      <a href="#adventure">Adventure</a>
+      <a href="#join">Join</a>
+      <a href="#contact">Invite</a>
+      <a href="#rules">Rules</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" id="home">
+      <div class="cloud one" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="cloud two" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="cloud three" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+
+      <div class="hero-card">
+        <h1 class="pixel-text">Block Party Server</h1>
+        <p>A fun, friendly, blocky world for building, exploring, and playing together. Grab your pickaxe, invite your friends, and start the adventure.</p>
+        <div class="server-address" aria-label="Server address">
+          <span id="serverText">www.blockpartyserver.com</span>
+          <button class="copy-btn" type="button" onclick="copyServer()">Copy Server</button>
+        </div>
+        <br />
+        <a class="big-btn" href="#play">Start the Mini Game</a>
+      </div>
+
+      <div class="ground" aria-hidden="true">
+        <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+      </div>
+    </section>
+
+    <section class="section" id="adventure">
+      <div class="wrap">
+        <h2 class="section-title pixel-text">Choose Your Adventure</h2>
+        <div class="grid">
+          <article class="card">
+            <span class="badge">Build</span>
+            <h3>Creative Builds</h3>
+            <p>Make castles, farms, secret bases, roller coasters, pixel art, and giant silly statues.</p>
+          </article>
+          <article class="card">
+            <span class="badge">Explore</span>
+            <h3>World Quests</h3>
+            <p>Follow clues, discover hidden rooms, and unlock weekly challenges around spawn.</p>
+          </article>
+          <article class="card">
+            <span class="badge">Team</span>
+            <h3>Block Parties</h3>
+            <p>Group events, treasure hunts, building contests, parkour races, and mini-game nights.</p>
+          </article>
+          <article class="card">
+            <span class="badge">Safe</span>
+            <h3>Family Friendly</h3>
+            <p>Clear rules, friendly play, and a server culture built around kindness and fun.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section block-game" id="play">
+      <div class="wrap">
+        <h2 class="section-title pixel-text">Mini Mining Game</h2>
+        <div class="game-panel">
+          <div class="game-area" aria-label="Clickable mining blocks game">
+            <div class="block-grid" id="blockGrid"></div>
+          </div>
+          <aside class="scoreboard">
+            <h3 class="pixel-text">Inventory</h3>
+            <div class="score-line"><span>Score</span><span id="score">0</span></div>
+            <div class="score-line"><span>Blocks Mined</span><span id="mined">0</span></div>
+            <div class="score-line"><span>Rare Finds</span><span id="rare">0</span></div>
+            <div class="inventory">
+              <div class="slot" id="slotGrass">Grass: 0</div>
+              <div class="slot" id="slotStone">Stone: 0</div>
+              <div class="slot" id="slotWood">Wood: 0</div>
+              <div class="slot" id="slotDiamond">Diamond: 0</div>
+              <div class="slot" id="slotGold">Gold: 0</div>
+              <div class="slot" id="slotRedstone">Redstone: 0</div>
+            </div>
+            <p>Click blocks to mine them. Rare blocks are worth more. Hit reset to rebuild the world.</p>
+            <button class="small-btn" type="button" onclick="resetGame()">Reset World</button>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <h2 class="section-title pixel-text">Tap the Friendly Mob</h2>
+        <div class="mob-zone">
+          <div class="mob" role="button" tabindex="0" aria-label="Friendly mob" onclick="mobMessage(event)" onkeydown="if(event.key==='Enter'){mobMessage(event)}">
+            <div class="eyes"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="join">
+      <div class="wrap">
+        <h2 class="section-title pixel-text">How to Join</h2>
+        <ol class="join-steps">
+          <li><strong>Open Minecraft and choose Realms.</strong></li>
+          <li><strong>Find Block Party Realm</strong> after your invite is approved.</li>
+          <li><strong>Ask a parent first</strong> before requesting access.</li>
+          <li><strong>Join, build, explore, and be excellent to each other.</strong></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="section" id="contact">
+      <div class="wrap">
+        <h2 class="section-title pixel-text">Request a Realm Invite</h2>
+        <div class="card">
+          <span class="badge">Invite Only</span>
+          <h3>Want to Join?</h3>
+          <p>
+            Block Party Realm is a private family-and-friends Minecraft Realm.
+            To request an invite, ask a parent first and do not share personal information.
+          </p>
+          <p>
+            The request button opens a GitHub form. Only include your Minecraft username,
+            how you know someone from the Realm, and whether you play Java or Bedrock.
+          </p>
+
+          <a class="big-btn"
+             href="https://github.com/foobarbigtime/blockpartyserver.github.io/issues/new?template=realm-invite-request.yml"
+             target="_blank"
+             rel="noopener">
+            Request Realm Invite
+          </a>
+
+          <p style="margin-top: 1rem; font-size: 0.95rem;">
+            Do not post your full name, phone number, address, age, school, or private information.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="rules">
+      <div class="wrap">
+        <h2 class="section-title pixel-text">Server Rules</h2>
+        <ul class="rules-list">
+          <li>Be kind. No bullying, griefing, or mean chat.</li>
+          <li>Ask before using someone else’s build or items.</li>
+          <li>Keep names, skins, signs, and builds family friendly.</li>
+          <li>Help new players. Everyone starts somewhere.</li>
+          <li>Have fun, build big, and use your imagination.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <strong class="pixel-text">Block Party Server</strong>
+    <p class="footer-note">This is a fan-made, block-inspired Realm website. It is not affiliated with Minecraft, Mojang, or Microsoft.</p>
+  </footer>
+
+  <div class="floating-note" id="note" role="status" aria-live="polite"></div>
+
+  <script>
+    const blockTypes = [
+      { name: "grass", label: "Grass", points: 1, rare: false },
+      { name: "stone", label: "Stone", points: 2, rare: false },
+      { name: "wood", label: "Wood", points: 2, rare: false },
+      { name: "diamond", label: "Diamond", points: 15, rare: true },
+      { name: "gold", label: "Gold", points: 10, rare: true },
+      { name: "redstone", label: "Redstone", points: 8, rare: true }
+    ];
+
+    const weights = ["grass", "grass", "grass", "stone", "stone", "wood", "wood", "redstone", "gold", "diamond"];
+    const state = {
+      score: 0,
+      mined: 0,
+      rare: 0,
+      counts: { grass: 0, stone: 0, wood: 0, diamond: 0, gold: 0, redstone: 0 }
+    };
+
+    function randomBlockType() {
+      const picked = weights[Math.floor(Math.random() * weights.length)];
+      return blockTypes.find(type => type.name === picked);
+    }
+
+    function buildGrid() {
+      const grid = document.getElementById("blockGrid");
+      grid.innerHTML = "";
+      for (let i = 0; i < 48; i++) {
+        const type = randomBlockType();
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = `block ${type.name}`;
+        btn.setAttribute("aria-label", `Mine ${type.label} block`);
+        btn.dataset.type = type.name;
+        btn.onclick = (event) => mineBlock(event, btn);
+        grid.appendChild(btn);
+      }
+    }
+
+    function mineBlock(event, block) {
+      if (block.classList.contains("broken")) return;
+      const type = blockTypes.find(item => item.name === block.dataset.type);
+      block.classList.add("broken");
+      block.disabled = true;
+      state.score += type.points;
+      state.mined += 1;
+      state.counts[type.name] += 1;
+      if (type.rare) state.rare += 1;
+      updateScoreboard();
+      showNote(`+${type.points} ${type.label}!`);
+      spawnParticles(event.clientX, event.clientY, type.name);
+    }
+
+    function updateScoreboard() {
+      document.getElementById("score").textContent = state.score;
+      document.getElementById("mined").textContent = state.mined;
+      document.getElementById("rare").textContent = state.rare;
+      document.getElementById("slotGrass").textContent = `Grass: ${state.counts.grass}`;
+      document.getElementById("slotStone").textContent = `Stone: ${state.counts.stone}`;
+      document.getElementById("slotWood").textContent = `Wood: ${state.counts.wood}`;
+      document.getElementById("slotDiamond").textContent = `Diamond: ${state.counts.diamond}`;
+      document.getElementById("slotGold").textContent = `Gold: ${state.counts.gold}`;
+      document.getElementById("slotRedstone").textContent = `Redstone: ${state.counts.redstone}`;
+    }
+
+    function resetGame() {
+      state.score = 0;
+      state.mined = 0;
+      state.rare = 0;
+      Object.keys(state.counts).forEach(key => state.counts[key] = 0);
+      updateScoreboard();
+      buildGrid();
+      showNote("New world generated!");
+    }
+
+    async function copyServer() {
+      const address = document.getElementById("serverText").textContent;
+      try {
+        await navigator.clipboard.writeText(address);
+        showNote("Server address copied!");
+      } catch (error) {
+        showNote("Copy failed. Highlight and copy the address manually.");
+      }
+    }
+
+    function showNote(message) {
+      const note = document.getElementById("note");
+      note.textContent = message;
+      note.classList.add("show");
+      window.clearTimeout(showNote.timeout);
+      showNote.timeout = window.setTimeout(() => note.classList.remove("show"), 1800);
+    }
+
+    function mobMessage(event) {
+      const messages = [
+        "The mob says: build something awesome!",
+        "Quest unlocked: invite a friend!",
+        "Secret tip: diamond blocks are worth 15 points.",
+        "The mob approves of your block party energy.",
+        "Achievement get: friendly tap!"
+      ];
+      const message = messages[Math.floor(Math.random() * messages.length)];
+      showNote(message);
+      const rect = event.currentTarget.getBoundingClientRect();
+      spawnParticles(rect.left + rect.width / 2, rect.top + rect.height / 2, "grass");
+    }
+
+    function spawnParticles(x, y, typeName) {
+      const colorMap = {
+        grass: "#54c947",
+        stone: "#9b9b9b",
+        wood: "#a56a31",
+        diamond: "#5de1ff",
+        gold: "#ffd84d",
+        redstone: "#ff3b3b"
+      };
+      for (let i = 0; i < 12; i++) {
+        const particle = document.createElement("span");
+        particle.className = "particle";
+        particle.style.left = `${x}px`;
+        particle.style.top = `${y}px`;
+        particle.style.background = colorMap[typeName] || "#ffd84d";
+        particle.style.setProperty("--x", `${Math.random() * 140 - 70}px`);
+        particle.style.setProperty("--y", `${Math.random() * -120 - 20}px`);
+        document.body.appendChild(particle);
+        window.setTimeout(() => particle.remove(), 750);
+      }
+    }
+
+    buildGrid();
+  </script>
 </body>
 </html>
