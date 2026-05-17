@@ -12,23 +12,17 @@
       --grass-dark: #2f8429;
       --dirt: #8b5a2b;
       --dirt-dark: #5d371c;
-      --stone: #8c8c8c;
-      --wood: #9b642f;
       --gold: #ffd84d;
       --diamond: #5de1ff;
       --redstone: #ff3b3b;
       --ink: #1e1e1e;
-      --panel: rgba(255,255,255,0.92);
+      --panel: rgba(255,255,255,0.93);
       --shadow: rgba(0,0,0,0.28);
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
-    html {
-      scroll-behavior: smooth;
-    }
+    html { scroll-behavior: smooth; }
 
     body {
       margin: 0;
@@ -54,10 +48,9 @@
       align-items: center;
       gap: 1rem;
       padding: 0.75rem 1rem;
-      background: rgba(32, 64, 32, 0.92);
+      background: rgba(32, 64, 32, 0.94);
       border-bottom: 5px solid rgba(0,0,0,0.25);
       color: white;
-      backdrop-filter: blur(8px);
     }
 
     .brand {
@@ -71,9 +64,7 @@
     .mini-block {
       width: 34px;
       height: 34px;
-      image-rendering: pixelated;
-      background:
-        linear-gradient(#53c64b 0 35%, #8b5a2b 35% 100%);
+      background: linear-gradient(#53c64b 0 35%, #8b5a2b 35% 100%);
       border: 3px solid rgba(0,0,0,0.35);
       box-shadow: 3px 3px 0 rgba(0,0,0,0.25);
     }
@@ -88,7 +79,7 @@
     nav a {
       color: white;
       text-decoration: none;
-      font-weight: 800;
+      font-weight: 900;
       padding: 0.45rem 0.7rem;
       border: 2px solid rgba(255,255,255,0.25);
       background: rgba(0,0,0,0.18);
@@ -116,7 +107,6 @@
       display: grid;
       grid-template-columns: repeat(5, 34px);
       grid-template-rows: repeat(2, 34px);
-      gap: 0;
       opacity: 0.9;
       animation: floatCloud linear infinite;
     }
@@ -168,25 +158,9 @@
       line-height: 1.45;
     }
 
-    .server-address {
-      display: inline-flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.8rem;
-      background: #202020;
-      color: white;
-      border: 5px solid #444;
-      box-shadow: inset 0 0 0 3px #111, 6px 6px 0 rgba(0,0,0,0.25);
-      font-size: clamp(1rem, 2.7vw, 1.5rem);
-      font-weight: 900;
-      word-break: break-word;
-    }
-
-    .copy-btn,
     .big-btn,
-    .small-btn {
+    .small-btn,
+    .copy-btn {
       cursor: pointer;
       border: 4px solid #222;
       background: var(--gold);
@@ -194,24 +168,20 @@
       font-weight: 900;
       box-shadow: 4px 4px 0 rgba(0,0,0,0.35);
       transition: transform 0.08s ease, box-shadow 0.08s ease;
-    }
-
-    .copy-btn {
-      padding: 0.55rem 0.8rem;
-      font-size: 0.95rem;
+      text-decoration: none;
+      display: inline-block;
     }
 
     .big-btn {
-      display: inline-block;
-      margin-top: 1.2rem;
+      margin: 0.35rem;
       padding: 0.85rem 1.1rem;
       font-size: 1.1rem;
-      text-decoration: none;
     }
 
-    .small-btn {
-      padding: 0.45rem 0.65rem;
-      font-size: 0.9rem;
+    .small-btn,
+    .copy-btn {
+      padding: 0.55rem 0.8rem;
+      font-size: 0.95rem;
     }
 
     button:hover,
@@ -293,7 +263,7 @@
     }
 
     .block-game {
-      background: rgba(15, 31, 20, 0.86);
+      background: rgba(15, 31, 20, 0.88);
       color: white;
       border-top: 8px solid rgba(0,0,0,0.3);
       border-bottom: 8px solid rgba(0,0,0,0.3);
@@ -324,8 +294,6 @@
       min-height: 42px;
       border: 3px solid rgba(0,0,0,0.35);
       cursor: pointer;
-      position: relative;
-      image-rendering: pixelated;
       transition: transform 0.05s ease, filter 0.12s ease;
     }
 
@@ -384,185 +352,6 @@
       padding: 0.35rem;
       font-weight: 900;
     }
-
-    .multiplayer-card {
-      background: rgba(255,255,255,0.95);
-      border: 6px solid #222;
-      padding: 1rem;
-      box-shadow: 9px 9px 0 rgba(0,0,0,0.25);
-    }
-
-    .join-world-form {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.6rem;
-      align-items: center;
-      margin: 0.8rem 0 1rem;
-    }
-
-    .join-world-form input {
-      flex: 1 1 240px;
-      padding: 0.75rem;
-      border: 4px solid #222;
-      font-size: 1rem;
-      font-weight: 900;
-      box-shadow: inset 3px 3px 0 rgba(0,0,0,0.12);
-    }
-
-    .world-layout {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 260px;
-      gap: 1rem;
-      align-items: start;
-    }
-
-    .world-stage {
-      position: relative;
-      min-height: 420px;
-      overflow: hidden;
-      border: 6px solid #222;
-      background:
-        linear-gradient(#7ec8ff 0 58%, #45b83d 58% 68%, #8b5a2b 68% 100%);
-      box-shadow: inset 0 0 0 4px rgba(255,255,255,0.25);
-      touch-action: none;
-    }
-
-    .world-stage::before {
-      content: "";
-      position: absolute;
-      inset: auto 0 0 0;
-      height: 64px;
-      background: repeating-linear-gradient(90deg, rgba(0,0,0,0.14) 0 2px, transparent 2px 52px);
-      pointer-events: none;
-    }
-
-    .steve-player {
-      position: absolute;
-      width: 42px;
-      height: 74px;
-      transform: translate(-50%, -100%);
-      transition: left 0.08s linear, top 0.08s linear;
-      z-index: 3;
-    }
-
-    .steve-name {
-      position: absolute;
-      left: 50%;
-      bottom: 78px;
-      transform: translateX(-50%);
-      white-space: nowrap;
-      background: rgba(0,0,0,0.75);
-      color: white;
-      border: 2px solid rgba(255,255,255,0.7);
-      padding: 0.12rem 0.35rem;
-      font-size: 0.78rem;
-      font-weight: 900;
-      pointer-events: none;
-    }
-
-    .steve-head,
-    .steve-body,
-    .steve-arm,
-    .steve-leg {
-      position: absolute;
-      border: 3px solid rgba(0,0,0,0.35);
-      image-rendering: pixelated;
-    }
-
-    .steve-head {
-      left: 9px;
-      top: 0;
-      width: 24px;
-      height: 24px;
-      background: #c58b5b;
-    }
-
-    .steve-head::before {
-      content: "";
-      position: absolute;
-      left: 5px;
-      top: 8px;
-      width: 4px;
-      height: 4px;
-      background: #222;
-      box-shadow: 10px 0 #222, 5px 7px #7a3f26;
-    }
-
-    .steve-body {
-      left: 8px;
-      top: 24px;
-      width: 26px;
-      height: 28px;
-      background: #26a6c8;
-    }
-
-    .steve-arm {
-      top: 27px;
-      width: 10px;
-      height: 30px;
-      background: #c58b5b;
-    }
-
-    .steve-arm.left { left: 0; }
-    .steve-arm.right { right: 0; }
-
-    .steve-leg {
-      top: 52px;
-      width: 13px;
-      height: 22px;
-      background: #2c4f9c;
-    }
-
-    .steve-leg.left { left: 8px; }
-    .steve-leg.right { right: 8px; }
-
-    .steve-player.local .steve-name {
-      background: #ffd84d;
-      color: #222;
-      border-color: #222;
-    }
-
-    .world-sidebar {
-      background: #222;
-      color: white;
-      border: 5px solid #111;
-      padding: 0.85rem;
-      box-shadow: 6px 6px 0 rgba(0,0,0,0.25);
-    }
-
-    .world-sidebar h3 {
-      margin: 0 0 0.5rem;
-    }
-
-    .player-list {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: grid;
-      gap: 0.4rem;
-    }
-
-    .player-list li {
-      background: rgba(255,255,255,0.12);
-      border: 2px solid rgba(255,255,255,0.25);
-      padding: 0.35rem;
-      font-weight: 900;
-      word-break: break-word;
-    }
-
-    .mobile-controls {
-      display: none;
-      grid-template-columns: repeat(3, 52px);
-      grid-template-rows: repeat(3, 52px);
-      gap: 0.3rem;
-      justify-content: center;
-      margin-top: 0.8rem;
-    }
-
-    .mobile-controls button:nth-child(1) { grid-column: 2; grid-row: 1; }
-    .mobile-controls button:nth-child(2) { grid-column: 1; grid-row: 2; }
-    .mobile-controls button:nth-child(3) { grid-column: 3; grid-row: 2; }
-    .mobile-controls button:nth-child(4) { grid-column: 2; grid-row: 3; }
 
     .join-steps {
       counter-reset: step;
@@ -691,32 +480,6 @@
       to { left: calc(100% - 90px); }
     }
 
-    .floating-note {
-      position: fixed;
-      left: 50%;
-      bottom: 1rem;
-      transform: translateX(-50%);
-      background: #222;
-      color: white;
-      border: 4px solid var(--gold);
-      padding: 0.7rem 1rem;
-      z-index: 100;
-      box-shadow: 5px 5px 0 rgba(0,0,0,0.3);
-      display: none;
-      font-weight: 900;
-      text-align: center;
-    }
-
-    .floating-note.show {
-      display: block;
-      animation: pop 0.25s ease;
-    }
-
-    @keyframes pop {
-      from { transform: translateX(-50%) scale(0.85); }
-      to { transform: translateX(-50%) scale(1); }
-    }
-
     .rules-list {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -749,6 +512,26 @@
       font-size: 0.95rem;
     }
 
+    .floating-note {
+      position: fixed;
+      left: 50%;
+      bottom: 1rem;
+      transform: translateX(-50%);
+      background: #222;
+      color: white;
+      border: 4px solid var(--gold);
+      padding: 0.7rem 1rem;
+      z-index: 100;
+      box-shadow: 5px 5px 0 rgba(0,0,0,0.3);
+      display: none;
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .floating-note.show {
+      display: block;
+    }
+
     .particle {
       position: fixed;
       width: 10px;
@@ -768,18 +551,6 @@
     }
 
     @media (max-width: 790px) {
-      .world-layout {
-        grid-template-columns: 1fr;
-      }
-
-      .world-stage {
-        min-height: 360px;
-      }
-
-      .mobile-controls {
-        display: grid;
-      }
-
       .topbar {
         align-items: flex-start;
         flex-direction: column;
@@ -797,14 +568,6 @@
         grid-template-columns: repeat(6, 1fr);
       }
     }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        scroll-behavior: auto !important;
-      }
-    }
   </style>
 </head>
 <body>
@@ -814,7 +577,7 @@
       <span>Block Party Server</span>
     </div>
     <nav aria-label="Main navigation">
-      <a href="#world">World</a>
+      <a href="world.html">Block World</a>
       <a href="#play">Mining Game</a>
       <a href="#adventure">Adventure</a>
       <a href="#join">Join</a>
@@ -832,18 +595,29 @@
       <div class="hero-card">
         <h1 class="pixel-text">Block Party Server</h1>
         <p>A fun, friendly, blocky world for building, exploring, and playing together. Grab your pickaxe, invite your friends, and start the adventure.</p>
-        <div class="server-address" aria-label="Server address">
-          <span id="serverText">www.blockpartyserver.com</span>
-          <button class="copy-btn" type="button" onclick="copyServer()">Copy Server</button>
-        </div>
-        <br />
-        <a class="big-btn" href="#play">Start the Mini Game</a>
+        <a class="big-btn" href="world.html">Enter Block World</a>
+        <a class="big-btn" href="#play">Play Mining Game</a>
       </div>
 
       <div class="ground" aria-hidden="true">
         <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
         <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
         <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+      </div>
+    </section>
+
+    <section class="section" id="world">
+      <div class="wrap">
+        <h2 class="section-title pixel-text">Live Block World</h2>
+        <div class="card">
+          <span class="badge">Multiplayer</span>
+          <h3>Enter the Block World</h3>
+          <p>
+            Spawn your character, enter a gamer tag, and play in the live multiplayer world.
+            Use a nickname only. Do not use your real name.
+          </p>
+          <a class="big-btn" href="world.html">Enter Block World</a>
+        </div>
       </div>
     </section>
 
@@ -871,46 +645,6 @@
             <h3>Family Friendly</h3>
             <p>Clear rules, friendly play, and a server culture built around kindness and fun.</p>
           </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" id="world">
-      <div class="wrap">
-        <h2 class="section-title pixel-text">Live Block World</h2>
-        <div class="multiplayer-card">
-          <span class="badge">Multiplayer</span>
-          <h3>Spawn Your Character</h3>
-          <p>
-            Enter a gamer tag or nickname only. Do not use your real name.
-            When you join, other people on the website can see your character moving around.
-          </p>
-
-          <div class="join-world-form">
-            <input id="gamerTagInput" maxlength="20" autocomplete="off" placeholder="Enter gamer tag" aria-label="Enter gamer tag" />
-            <button class="big-btn" type="button" id="joinWorldBtn">Join World</button>
-            <button class="small-btn" type="button" id="leaveWorldBtn">Leave</button>
-          </div>
-
-          <div class="world-layout">
-            <div class="world-stage" id="worldStage" tabindex="0" aria-label="Live multiplayer block world">
-            </div>
-            <aside class="world-sidebar">
-              <h3 class="pixel-text">Players Online</h3>
-              <ul class="player-list" id="playerList">
-                <li>No players yet</li>
-              </ul>
-              <p><strong>Move:</strong> WASD or arrow keys.</p>
-              <p><strong>Goal:</strong> chase your friends, invent your own game, and keep it friendly.</p>
-            </aside>
-          </div>
-
-          <div class="mobile-controls" aria-label="Mobile movement controls">
-            <button class="small-btn" type="button" data-move="up">▲</button>
-            <button class="small-btn" type="button" data-move="left">◀</button>
-            <button class="small-btn" type="button" data-move="right">▶</button>
-            <button class="small-btn" type="button" data-move="down">▼</button>
-          </div>
         </div>
       </div>
     </section>
@@ -944,9 +678,9 @@
 
     <section class="section">
       <div class="wrap">
-        <h2 class="section-title pixel-text">Tap the Friendly Mob</h2>
+        <h2 class="section-title pixel-text">Tap the Creeper</h2>
         <div class="mob-zone">
-          <div class="mob" role="button" tabindex="0" aria-label="Friendly mob" onclick="mobMessage(event)" onkeydown="if(event.key==='Enter'){mobMessage(event)}">
+          <div class="mob" role="button" tabindex="0" aria-label="Creeper" onclick="mobMessage(event)" onkeydown="if(event.key==='Enter'){mobMessage(event)}">
             <div class="eyes"></div>
           </div>
         </div>
@@ -955,7 +689,7 @@
 
     <section class="section" id="join">
       <div class="wrap">
-        <h2 class="section-title pixel-text">How to Join</h2>
+        <h2 class="section-title pixel-text">How to Join the Realm</h2>
         <ol class="join-steps">
           <li><strong>Open Minecraft and choose Realms.</strong></li>
           <li><strong>Find Block Party Realm</strong> after your invite is approved.</li>
@@ -976,14 +710,12 @@
             To request an invite, ask a parent first and do not share personal information.
           </p>
           <p>
-            The request button opens a GitHub form. Only include your Minecraft username,
+            The request button opens an email. Only include your Minecraft username,
             how you know someone from the Realm, and whether you play Java or Bedrock.
           </p>
 
           <a class="big-btn"
-             href="https://github.com/foobarbigtime/blockpartyserver.github.io/issues/new?template=realm-invite-request.yml"
-             target="_blank"
-             rel="noopener">
+             href="mailto:foobarbigtime@proton.me?subject=Realm%20Invite%20Request">
             Request Realm Invite
           </a>
 
@@ -1026,6 +758,7 @@
     ];
 
     const weights = ["grass", "grass", "grass", "stone", "stone", "wood", "wood", "redstone", "gold", "diamond"];
+
     const state = {
       score: 0,
       mined: 0,
@@ -1048,7 +781,7 @@
         btn.className = `block ${type.name}`;
         btn.setAttribute("aria-label", `Mine ${type.label} block`);
         btn.dataset.type = type.name;
-        btn.onclick = (event) => mineBlock(event, btn);
+        btn.onclick = event => mineBlock(event, btn);
         grid.appendChild(btn);
       }
     }
@@ -1087,16 +820,6 @@
       updateScoreboard();
       buildGrid();
       showNote("New world generated!");
-    }
-
-    async function copyServer() {
-      const address = document.getElementById("serverText").textContent;
-      try {
-        await navigator.clipboard.writeText(address);
-        showNote("Server address copied!");
-      } catch (error) {
-        showNote("Copy failed. Highlight and copy the address manually.");
-      }
     }
 
     function showNote(message) {
@@ -1157,6 +880,7 @@
         gold: "#ffd84d",
         redstone: "#ff3b3b"
       };
+
       for (let i = 0; i < 12; i++) {
         const particle = document.createElement("span");
         particle.className = "particle";
@@ -1171,196 +895,6 @@
     }
 
     buildGrid();
-  </script>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-    import { getDatabase, ref, set, onValue, onDisconnect, remove } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyDDVOIriZ8AjCFL6AjVFOZ-tVkTpKJG7ho",
-      authDomain: "blockpartyserver-e3ec9.firebaseapp.com",
-      databaseURL: "https://blockpartyserver-e3ec9-default-rtdb.firebaseio.com",
-      projectId: "blockpartyserver-e3ec9",
-      storageBucket: "blockpartyserver-e3ec9.firebasestorage.app",
-      messagingSenderId: "413005046576",
-      appId: "1:413005046576:web:97f03931bdd0d04c29b9ef5",
-      measurementId: "G-FY7KRXN6Q"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    const stage = document.getElementById("worldStage");
-    const playerList = document.getElementById("playerList");
-    const gamerTagInput = document.getElementById("gamerTagInput");
-    const joinWorldBtn = document.getElementById("joinWorldBtn");
-    const leaveWorldBtn = document.getElementById("leaveWorldBtn");
-    const playersRef = ref(db, "players");
-
-    const myIdKey = "blockPartyPlayerId";
-    const myNameKey = "blockPartyPlayerName";
-    let myId = localStorage.getItem(myIdKey) || crypto.randomUUID();
-    localStorage.setItem(myIdKey, myId);
-
-    let joined = false;
-    let myPlayerRef = null;
-    let myPosition = { x: 50, y: 78 };
-    let keys = new Set();
-
-    gamerTagInput.value = localStorage.getItem(myNameKey) || "";
-
-    function cleanName(name) {
-      return String(name || "")
-        .replace(/[^a-zA-Z0-9_ -]/g, "")
-        .replace(new RegExp("\\s+", "g"), " ")
-        .trim()
-        .slice(0, 20);
-    }
-
-    function clamp(value, min, max) {
-      return Math.max(min, Math.min(max, value));
-    }
-
-    function playerData() {
-      return {
-        name: cleanName(gamerTagInput.value),
-        x: Math.round(myPosition.x),
-        y: Math.round(myPosition.y),
-        lastSeen: Date.now()
-      };
-    }
-
-    async function joinWorld() {
-      const name = cleanName(gamerTagInput.value);
-      if (!name) {
-        showNote("Enter a gamer tag first. No real names.");
-        gamerTagInput.focus();
-        return;
-      }
-
-      localStorage.setItem(myNameKey, name);
-      gamerTagInput.value = name;
-      joined = true;
-      myPlayerRef = ref(db, `players/${myId}`);
-      await set(myPlayerRef, playerData());
-      await onDisconnect(myPlayerRef).remove();
-      stage.focus();
-      showNote(`${name} joined the world!`);
-    }
-
-    async function leaveWorld() {
-      if (myPlayerRef) await remove(myPlayerRef);
-      joined = false;
-      showNote("You left the world.");
-    }
-
-    function renderPlayers(players) {
-      stage.querySelectorAll(".steve-player").forEach(el => el.remove());
-      const now = Date.now();
-      const activeEntries = Object.entries(players || {}).filter(([, player]) => {
-        return player && player.name && typeof player.x === "number" && typeof player.y === "number" && now - Number(player.lastSeen || 0) < 45000;
-      });
-
-      if (activeEntries.length === 0) {
-        playerList.innerHTML = "<li>No players yet</li>";
-      } else {
-        playerList.innerHTML = activeEntries
-          .sort((a, b) => String(a[1].name).localeCompare(String(b[1].name)))
-          .map(([id, player]) => `<li>${escapeHtml(player.name)}${id === myId ? " ⭐" : ""}</li>`)
-          .join("");
-      }
-
-      for (const [id, player] of activeEntries) {
-        const steve = document.createElement("div");
-        steve.className = `steve-player${id === myId ? " local" : ""}`;
-        steve.style.left = `${clamp(player.x, 4, 96)}%`;
-        steve.style.top = `${clamp(player.y, 28, 96)}%`;
-        steve.innerHTML = `
-          <div class="steve-name">${escapeHtml(player.name)}</div>
-          <div class="steve-head"></div>
-          <div class="steve-body"></div>
-          <div class="steve-arm left"></div>
-          <div class="steve-arm right"></div>
-          <div class="steve-leg left"></div>
-          <div class="steve-leg right"></div>
-        `;
-        stage.appendChild(steve);
-      }
-    }
-
-    function escapeHtml(value) {
-      return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-    let lastWrite = 0;
-    async function movePlayer(dx, dy) {
-      if (!joined || !myPlayerRef) return;
-      myPosition.x = clamp(myPosition.x + dx, 4, 96);
-      myPosition.y = clamp(myPosition.y + dy, 35, 96);
-      const now = Date.now();
-      if (now - lastWrite > 70) {
-        lastWrite = now;
-        await set(myPlayerRef, playerData());
-      }
-    }
-
-    function movementLoop() {
-      let dx = 0;
-      let dy = 0;
-      if (keys.has("arrowleft") || keys.has("a")) dx -= 1.3;
-      if (keys.has("arrowright") || keys.has("d")) dx += 1.3;
-      if (keys.has("arrowup") || keys.has("w")) dy -= 1.3;
-      if (keys.has("arrowdown") || keys.has("s")) dy += 1.3;
-      if (dx || dy) movePlayer(dx, dy);
-      requestAnimationFrame(movementLoop);
-    }
-
-    window.addEventListener("keydown", (event) => {
-      const key = event.key.toLowerCase();
-      if (["arrowleft", "arrowright", "arrowup", "arrowdown", "w", "a", "s", "d"].includes(key)) {
-        keys.add(key);
-        if (document.activeElement !== gamerTagInput) event.preventDefault();
-      }
-    });
-
-    window.addEventListener("keyup", (event) => {
-      keys.delete(event.key.toLowerCase());
-    });
-
-    document.querySelectorAll("[data-move]").forEach(button => {
-      button.addEventListener("click", () => {
-        const direction = button.dataset.move;
-        if (direction === "up") movePlayer(0, -4);
-        if (direction === "down") movePlayer(0, 4);
-        if (direction === "left") movePlayer(-4, 0);
-        if (direction === "right") movePlayer(4, 0);
-      });
-    });
-
-    joinWorldBtn.addEventListener("click", joinWorld);
-    leaveWorldBtn.addEventListener("click", leaveWorld);
-    gamerTagInput.addEventListener("keydown", event => {
-      if (event.key === "Enter") joinWorld();
-    });
-
-    onValue(playersRef, snapshot => {
-      renderPlayers(snapshot.val() || {});
-    });
-
-    window.addEventListener("beforeunload", () => {
-      if (myPlayerRef) remove(myPlayerRef);
-    });
-
-    window.setInterval(() => {
-      if (joined && myPlayerRef) set(myPlayerRef, playerData());
-    }, 10000);
-
-    movementLoop();
   </script>
 </body>
 </html>

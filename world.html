@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Block Party World</title>
+  <style>
+    :root {
+      --sky-day: #78c8ff;
+      --sky-night: #101c3d;
+      --grass: #45b83d;
+      --dirt: #8b5a2b;
+      --stone: #8d8d8d;
+      --sand: #e6cf83;
+      --snow: #eef8ff;
+      --water: #338ee8;
+      --wood: #9b642f;
+      --gold: #ffd84d;
+      --ink: #1f1f1f;
+      --panel: rgba(255,255,255,0.94);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Trebuchet MS", Arial, sans-serif;
+      color: var(--ink);
+      background: linear-gradient(var(--sky-day), #3b8eea);
+      overflow-x: hidden;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.75rem 1rem;
+      background: rgba(32, 64, 32, 0.94);
+      border-bottom: 5px solid rgba(0,0,0,0.25);
+      color: white;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      font-weight: 900;
+      font-size: clamp(1.1rem, 3vw, 1.6rem);
+    }
+
+    .mini-block {
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(#53c64b 0 35%, #8b5a2b 35% 100%);
+      border: 3px solid rgba(0,0,0,0.35);
+      box-shadow: 3px 3px 0 rgba(0,0,0,0.25);
+    }
+
+    a, button, input, select { font: inherit; }
+
+    .topbar a {
+      color: white;
+      text-decoration: none;
+      font-weight: 900;
+      padding: 0.45rem 0.7rem;
+      border: 2px solid rgba(255,255,255,0.25);
+      background: rgba(0,0,0,0.18);
+      box-shadow: 2px 2px 0 rgba(0,0,0,0.25);
+    }
+
+    .topbar a:hover,
+    .topbar a:focus { background: var(--gold); color: #222; }
+
+    .page {
+      width: min(1280px, 100%);
+      margin: 0 auto;
+      padding: 1rem;
+    }
+
+    .hero-card,
+    .panel {
+      background: var(--panel);
+      border: 6px solid #222;
+      box-shadow: 9px 9px 0 rgba(0,0,0,0.25);
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    h1, h2, h3 { margin-top: 0; }
+
+    h1 {
+      font-size: clamp(2rem, 6vw, 4rem);
+      margin-bottom: 0.3rem;
+      color: #243f16;
+      text-shadow: 3px 3px 0 rgba(0,0,0,0.18);
+    }
+
+    .setup-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr 0.8fr;
+      gap: 0.75rem;
+      align-items: end;
+    }
+
+    label {
+      display: block;
+      font-weight: 900;
+      margin-bottom: 0.25rem;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 4px solid #222;
+      background: white;
+      font-weight: 900;
+      box-shadow: inset 3px 3px 0 rgba(0,0,0,0.12);
+    }
+
+    .btn {
+      cursor: pointer;
+      border: 4px solid #222;
+      background: var(--gold);
+      color: #222;
+      font-weight: 900;
+      box-shadow: 4px 4px 0 rgba(0,0,0,0.35);
+      padding: 0.75rem 1rem;
+      transition: transform 0.08s ease, box-shadow 0.08s ease;
+    }
+
+    .btn:hover,
+    .btn:focus {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0 rgba(0,0,0,0.35);
+    }
+
+    .btn.secondary { background: #d9f2ff; }
+    .btn.danger { background: #ff8b8b; }
+
+    .game-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 310px;
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .world-wrap {
+      background: #111;
+      border: 6px solid #050505;
+      padding: 0.6rem;
+      box-shadow: 9px 9px 0 rgba(0,0,0,0.35);
+    }
+
+    .world-stage {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      min-height: 420px;
+      overflow: hidden;
+      border: 4px solid #333;
+      background: linear-gradient(var(--sky-day) 0 55%, #45b83d 55% 66%, #8b5a2b 66% 100%);
+      touch-action: none;
+    }
+
+    .world-stage.night {
+      background: linear-gradient(var(--sky-night) 0 55%, #234a28 55% 66%, #4b2d17 66% 100%);
+    }
+
+    .sun, .moon {
+      position: absolute;
+      top: 8%;
+      right: 10%;
+      width: 54px;
+      height: 54px;
+      border: 4px solid rgba(0,0,0,0.3);
+      z-index: 1;
+    }
+
+    .sun { background: #ffe66b; box-shadow: 0 0 30px #ffe66b; }
+    .moon { display: none; background: #e9f4ff; box-shadow: 0 0 24px #e9f4ff; }
+    .world-stage.night .sun { display: none; }
+    .world-stage.night .moon { display: block; }
+
+    .weather-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 10;
+      overflow: hidden;
+    }
+
+    .weather-drop {
+      position: absolute;
+      top: -20px;
+      width: 3px;
+      height: 18px;
+      background: rgba(200,235,255,0.75);
+      animation: fall linear infinite;
+    }
+
+    .weather-snow {
+      position: absolute;
+      top: -20px;
+      width: 8px;
+      height: 8px;
+      background: white;
+      border: 1px solid rgba(0,0,0,0.1);
+      animation: snow linear infinite;
+    }
+
+    @keyframes fall { to { transform: translateY(720px); } }
+    @keyframes snow { to { transform: translate(30px, 720px); } }
+
+    .tile-layer {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: grid;
+      grid-template-columns: repeat(24, 1fr);
+      grid-template-rows: repeat(8, 1fr);
+      height: 45%;
+      z-index: 2;
+    }
+
+    .tile {
+      border: 1px solid rgba(0,0,0,0.24);
+      image-rendering: pixelated;
+      cursor: crosshair;
+    }
+
+    .tile:hover { outline: 3px solid var(--gold); z-index: 3; }
+    .tile.grass { background: linear-gradient(#52c647 0 35%, #8b5a2b 35%); }
+    .tile.dirt { background: #8b5a2b; }
+    .tile.stone { background: linear-gradient(135deg, #aaa, #777); }
+    .tile.sand { background: #e6cf83; }
+    .tile.snow { background: linear-gradient(#eef8ff 0 45%, #bcd9e8 45%); }
+    .tile.water { background: linear-gradient(135deg, #5db7ff, #1e75d6); animation: water 1.4s ease-in-out infinite alternate; }
+    .tile.wood { background: repeating-linear-gradient(90deg, #7b491f 0 8px, #a56a31 8px 16px); }
+    .tile.empty { background: transparent; border-color: rgba(0,0,0,0.08); }
+
+    @keyframes water { to { filter: brightness(1.18); } }
+
+    .player {
+      position: absolute;
+      width: 42px;
+      height: 74px;
+      transform: translate(-50%, -100%);
+      transition: left 0.08s linear, top 0.08s linear;
+      z-index: 8;
+    }
+
+    .player-name {
+      position: absolute;
+      left: 50%;
+      bottom: 78px;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      background: rgba(0,0,0,0.75);
+      color: white;
+      border: 2px solid rgba(255,255,255,0.7);
+      padding: 0.12rem 0.35rem;
+      font-size: 0.78rem;
+      font-weight: 900;
+      pointer-events: none;
+    }
+
+    .local .player-name { background: var(--gold); color: #222; border-color: #222; }
+
+    .head, .body, .arm, .leg {
+      position: absolute;
+      border: 3px solid rgba(0,0,0,0.35);
+    }
+
+    .head { left: 9px; top: 0; width: 24px; height: 24px; background: #c58b5b; }
+    .head::before { content: ""; position: absolute; left: 5px; top: 8px; width: 4px; height: 4px; background: #222; box-shadow: 10px 0 #222, 5px 7px #7a3f26; }
+    .body { left: 8px; top: 24px; width: 26px; height: 28px; background: #26a6c8; }
+    .arm { top: 27px; width: 10px; height: 30px; background: #c58b5b; }
+    .arm.left { left: 0; }
+    .arm.right { right: 0; }
+    .leg { top: 52px; width: 13px; height: 22px; background: #2c4f9c; }
+    .leg.left { left: 8px; }
+    .leg.right { right: 8px; }
+
+    .alex .body { background: #6bbd45; }
+    .alex .leg { background: #5b3b8f; }
+    .knight .head { background: #cfcfcf; }
+    .knight .body, .knight .arm { background: #9d9d9d; }
+    .knight .leg { background: #666; }
+    .robot .head, .robot .body, .robot .arm, .robot .leg { background: #b7c7d6; }
+    .ninja .head, .ninja .body, .ninja .arm, .ninja .leg { background: #222; }
+    .creepercostume .head, .creepercostume .body, .creepercostume .arm, .creepercostume .leg { background: #35b64a; }
+
+    .mob {
+      position: absolute;
+      width: 34px;
+      height: 46px;
+      transform: translate(-50%, -100%);
+      z-index: 7;
+    }
+
+    .mob .head { left: 7px; width: 20px; height: 20px; }
+    .mob .body { left: 5px; top: 20px; width: 24px; height: 20px; }
+    .mob.zombie .head, .mob.zombie .body { background: #48a85a; }
+    .mob.pig .head, .mob.pig .body { background: #f2a6b7; }
+    .mob.cow .head, .mob.cow .body { background: #f5f0df; }
+
+    .side-panel {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .panel h3 { margin-bottom: 0.5rem; }
+
+    .inventory-grid,
+    .tool-grid,
+    .block-grid,
+    .craft-grid,
+    .enchant-grid {
+      display: grid;
+      gap: 0.45rem;
+    }
+
+    .inventory-grid { grid-template-columns: repeat(2, 1fr); }
+    .tool-grid, .block-grid { grid-template-columns: repeat(2, 1fr); }
+
+    .item-btn {
+      cursor: pointer;
+      border: 3px solid #222;
+      background: white;
+      font-weight: 900;
+      padding: 0.45rem;
+      box-shadow: 3px 3px 0 rgba(0,0,0,0.18);
+    }
+
+    .item-btn.active { background: var(--gold); }
+    .stat { display: flex; justify-content: space-between; gap: 0.5rem; border-bottom: 2px dashed #333; padding: 0.25rem 0; font-weight: 900; }
+
+    .mobile-controls {
+      display: none;
+      grid-template-columns: repeat(3, 52px);
+      grid-template-rows: repeat(3, 52px);
+      gap: 0.3rem;
+      justify-content: center;
+      margin-top: 0.8rem;
+    }
+
+    .mobile-controls button:nth-child(1) { grid-column: 2; grid-row: 1; }
+    .mobile-controls button:nth-child(2) { grid-column: 1; grid-row: 2; }
+    .mobile-controls button:nth-child(3) { grid-column: 3; grid-row: 2; }
+    .mobile-controls button:nth-child(4) { grid-column: 2; grid-row: 3; }
+
+    .note {
+      position: fixed;
+      left: 50%;
+      bottom: 1rem;
+      transform: translateX(-50%);
+      background: #222;
+      color: white;
+      border: 4px solid var(--gold);
+      padding: 0.7rem 1rem;
+      z-index: 100;
+      box-shadow: 5px 5px 0 rgba(0,0,0,0.3);
+      display: none;
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .note.show { display: block; }
+
+    @media (max-width: 900px) {
+      .setup-grid, .game-layout { grid-template-columns: 1fr; }
+      .world-stage { min-height: 360px; }
+      .mobile-controls { display: grid; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><div class="mini-block" aria-hidden="true"></div><span>Block Party World</span></div>
+    <a href="index.html">Back to Main Site</a>
+  </header>
+
+  <main class="page">
+    <section class="hero-card">
+      <h1>Live Block World</h1>
+      <p>
+        Enter a gamer tag, choose a character, move around with friends, place and break blocks,
+        craft tools, enchant items, and watch the world change from day to night.
+      </p>
+      <p><strong>Safety:</strong> use a gamer tag or nickname only. Do not use your real name.</p>
+
+      <div class="setup-grid">
+        <div>
+          <label for="gamerTagInput">Gamer tag</label>
+          <input id="gamerTagInput" maxlength="20" autocomplete="off" placeholder="Example: BlockNinja123" />
+        </div>
+        <div>
+          <label for="characterSelect">Character</label>
+          <select id="characterSelect">
+            <option value="steve">Steve</option>
+            <option value="alex">Alex</option>
+            <option value="knight">Knight</option>
+            <option value="ninja">Ninja</option>
+            <option value="robot">Robot</option>
+            <option value="creepercostume">Creeper Costume</option>
+          </select>
+        </div>
+        <div>
+          <button class="btn" id="joinBtn" type="button">Join World</button>
+          <button class="btn danger" id="leaveBtn" type="button">Leave</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="game-layout">
+      <div class="world-wrap">
+        <div class="world-stage" id="worldStage" tabindex="0" aria-label="Live multiplayer block world">
+          <div class="sun"></div>
+          <div class="moon"></div>
+          <div class="tile-layer" id="tileLayer"></div>
+          <div class="weather-layer" id="weatherLayer"></div>
+        </div>
+        <div class="mobile-controls" aria-label="Mobile movement controls">
+          <button class="btn secondary" type="button" data-move="up">▲</button>
+          <button class="btn secondary" type="button" data-move="left">◀</button>
+          <button class="btn secondary" type="button" data-move="right">▶</button>
+          <button class="btn secondary" type="button" data-move="down">▼</button>
+        </div>
+      </div>
+
+      <aside class="side-panel">
+        <div class="panel">
+          <h3>Players Online</h3>
+          <ul id="playerList"><li>No players yet</li></ul>
+        </div>
+
+        <div class="panel">
+          <h3>World</h3>
+          <div class="stat"><span>Time</span><span id="timeStatus">Day</span></div>
+          <div class="stat"><span>Weather</span><span id="weatherStatus">Clear</span></div>
+          <button class="btn secondary" id="changeWeatherBtn" type="button">Change Weather</button>
+        </div>
+
+        <div class="panel">
+          <h3>Tools</h3>
+          <div class="tool-grid" id="toolGrid"></div>
+        </div>
+
+        <div class="panel">
+          <h3>Blocks</h3>
+          <div class="block-grid" id="blockGrid"></div>
+        </div>
+
+        <div class="panel">
+          <h3>Inventory</h3>
+          <div class="inventory-grid" id="inventoryGrid"></div>
+        </div>
+
+        <div class="panel">
+          <h3>Crafting</h3>
+          <div class="craft-grid">
+            <button class="item-btn" data-craft="wood_pickaxe">Craft Wood Pickaxe</button>
+            <button class="item-btn" data-craft="stone_pickaxe">Craft Stone Pickaxe</button>
+            <button class="item-btn" data-craft="axe">Craft Axe</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Enchanting</h3>
+          <div class="enchant-grid">
+            <button class="item-btn" data-enchant="speed">Enchant: Swift Mining</button>
+            <button class="item-btn" data-enchant="luck">Enchant: Lucky Blocks</button>
+          </div>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <div class="note" id="note" role="status" aria-live="polite"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getDatabase, ref, set, update, onValue, onDisconnect, remove, get } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDDVOIriZ8AjCFL6AjVFOZ-tVkTpKJG7ho",
+      authDomain: "blockpartyserver-e3ec9.firebaseapp.com",
+      databaseURL: "https://blockpartyserver-e3ec9-default-rtdb.firebaseio.com",
+      projectId: "blockpartyserver-e3ec9",
+      storageBucket: "blockpartyserver-e3ec9.firebasestorage.app",
+      messagingSenderId: "413005046576",
+      appId: "1:413005046576:web:97f03931bdd0d04c29b9ef5",
+      measurementId: "G-FY7KRXN6Q"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const stage = document.getElementById("worldStage");
+    const tileLayer = document.getElementById("tileLayer");
+    const weatherLayer = document.getElementById("weatherLayer");
+    const playerList = document.getElementById("playerList");
+    const gamerTagInput = document.getElementById("gamerTagInput");
+    const characterSelect = document.getElementById("characterSelect");
+    const joinBtn = document.getElementById("joinBtn");
+    const leaveBtn = document.getElementById("leaveBtn");
+    const toolGrid = document.getElementById("toolGrid");
+    const blockGrid = document.getElementById("blockGrid");
+    const inventoryGrid = document.getElementById("inventoryGrid");
+    const timeStatus = document.getElementById("timeStatus");
+    const weatherStatus = document.getElementById("weatherStatus");
+    const changeWeatherBtn = document.getElementById("changeWeatherBtn");
+
+    const playersRef = ref(db, "players");
+    const worldRef = ref(db, "world");
+    const tilesRef = ref(db, "world/tiles");
+    const mobsRef = ref(db, "world/mobs");
+    const stateRef = ref(db, "world/state");
+
+    const width = 24;
+    const height = 8;
+    const blockTypes = ["grass", "dirt", "stone", "sand", "snow", "water", "wood"];
+    const tools = ["hand", "pickaxe", "axe", "shovel", "bucket"];
+    const weatherOptions = ["clear", "rain", "snow"];
+
+    let myId = localStorage.getItem("bpw_id") || crypto.randomUUID();
+    localStorage.setItem("bpw_id", myId);
+    gamerTagInput.value = localStorage.getItem("bpw_name") || "";
+    characterSelect.value = localStorage.getItem("bpw_character") || "steve";
+
+    let joined = false;
+    let myRef = null;
+    let position = { x: 50, y: 48 };
+    let keys = new Set();
+    let selectedTool = "hand";
+    let selectedBlock = "grass";
+    let inventory = { grass: 10, dirt: 10, stone: 4, sand: 4, snow: 4, water: 2, wood: 8, gold: 1, pickaxe: 0, axe: 0, enchant_speed: 0, enchant_luck: 0 };
+    let tiles = {};
+    let mobs = {};
+    let worldState = { time: "day", weather: "clear" };
+
+    function showNote(message) {
+      const note = document.getElementById("note");
+      note.textContent = message;
+      note.classList.add("show");
+      clearTimeout(showNote.timer);
+      showNote.timer = setTimeout(() => note.classList.remove("show"), 1800);
+    }
+
+    function cleanName(name) {
+      return String(name || "")
+        .replace(/[^a-zA-Z0-9_ -]/g, "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 20);
+    }
+
+    function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
+    function tileKey(x, y) { return `${x}_${y}`; }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function defaultTile(x, y) {
+      if (y === 0 && x > 14 && x < 19) return "water";
+      if (y === 0 && x > 18) return "sand";
+      if (y === 0 && x < 4) return "snow";
+      if (y === 0) return "grass";
+      if (y < 3) return "dirt";
+      return "stone";
+    }
+
+    async function seedWorld() {
+      const snap = await get(tilesRef);
+      if (snap.exists()) return;
+
+      const seeded = {};
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          seeded[tileKey(x, y)] = defaultTile(x, y);
+        }
+      }
+
+      await update(worldRef, {
+        tiles: seeded,
+        state: { time: "day", weather: "clear" }
+      });
+    }
+
+    function renderTiles() {
+      tileLayer.innerHTML = "";
+
+      for (let y = height - 1; y >= 0; y--) {
+        for (let x = 0; x < width; x++) {
+          const key = tileKey(x, y);
+          const type = tiles[key] || defaultTile(x, y);
+          const tile = document.createElement("button");
+
+          tile.type = "button";
+          tile.className = `tile ${type}`;
+          tile.title = `${type} block`;
+          tile.dataset.x = x;
+          tile.dataset.y = y;
+          tile.addEventListener("click", () => useTile(x, y, type));
+
+          tileLayer.appendChild(tile);
+        }
+      }
+    }
+
+    async function useTile(x, y, type) {
+      if (!joined) {
+        showNote("Join the world first.");
+        return;
+      }
+
+      const key = tileKey(x, y);
+
+      if (selectedTool === "hand") {
+        if ((inventory[selectedBlock] || 0) <= 0) {
+          showNote(`No ${selectedBlock} blocks left.`);
+          return;
+        }
+
+        inventory[selectedBlock] -= 1;
+        await set(ref(db, `world/tiles/${key}`), selectedBlock);
+        showNote(`Placed ${selectedBlock}.`);
+      } else {
+        if (type === "empty") {
+          showNote("Nothing to collect there.");
+          return;
+        }
+
+        inventory[type] = (inventory[type] || 0) + 1;
+        await set(ref(db, `world/tiles/${key}`), "empty");
+        showNote(`${selectedTool} collected ${type}.`);
+      }
+
+      renderInventory();
+      syncMe();
+    }
+
+    function renderTools() {
+      toolGrid.innerHTML = tools
+        .map(tool => `<button class="item-btn ${tool === selectedTool ? "active" : ""}" data-tool="${tool}">${tool}</button>`)
+        .join("");
+
+      toolGrid.querySelectorAll("[data-tool]").forEach(button => {
+        button.addEventListener("click", () => {
+          selectedTool = button.dataset.tool;
+          renderTools();
+        });
+      });
+    }
+
+    function renderBlocks() {
+      blockGrid.innerHTML = blockTypes
+        .map(block => `<button class="item-btn ${block === selectedBlock ? "active" : ""}" data-block="${block}">${block}</button>`)
+        .join("");
+
+      blockGrid.querySelectorAll("[data-block]").forEach(button => {
+        button.addEventListener("click", () => {
+          selectedBlock = button.dataset.block;
+          selectedTool = "hand";
+          renderBlocks();
+          renderTools();
+        });
+      });
+    }
+
+    function renderInventory() {
+      inventoryGrid.innerHTML = Object.entries(inventory)
+        .map(([item, count]) => `<div class="stat"><span>${item}</span><span>${count}</span></div>`)
+        .join("");
+    }
+
+    function playerData() {
+      return {
+        name: cleanName(gamerTagInput.value),
+        character: characterSelect.value,
+        x: Math.round(position.x),
+        y: Math.round(position.y),
+        inventory,
+        lastSeen: Date.now()
+      };
+    }
+
+    async function syncMe() {
+      if (joined && myRef) {
+        await set(myRef, playerData());
+      }
+    }
+
+    async function joinWorld() {
+      const name = cleanName(gamerTagInput.value);
+
+      if (!name) {
+        showNote("Enter a gamer tag first. No real names.");
+        return;
+      }
+
+      localStorage.setItem("bpw_name", name);
+      localStorage.setItem("bpw_character", characterSelect.value);
+      gamerTagInput.value = name;
+
+      joined = true;
+      myRef = ref(db, `players/${myId}`);
+
+      await set(myRef, playerData());
+      await onDisconnect(myRef).remove();
+
+      stage.focus();
+      showNote(`${name} joined the world!`);
+    }
+
+    async function leaveWorld() {
+      if (myRef) {
+        await remove(myRef);
+      }
+
+      joined = false;
+      showNote("You left the world.");
+    }
+
+    function renderPlayers(players) {
+      stage.querySelectorAll(".player").forEach(el => el.remove());
+
+      const now = Date.now();
+      const active = Object.entries(players || {}).filter(([, p]) => {
+        return p && p.name && now - Number(p.lastSeen || 0) < 45000;
+      });
+
+      playerList.innerHTML = active.length
+        ? active.map(([id, p]) => `<li>${escapeHtml(p.name)}${id === myId ? " ⭐" : ""}</li>`).join("")
+        : "<li>No players yet</li>";
+
+      for (const [id, p] of active) {
+        const el = document.createElement("div");
+        el.className = `player ${p.character || "steve"} ${id === myId ? "local" : ""}`;
+        el.style.left = `${clamp(p.x, 3, 97)}%`;
+        el.style.top = `${clamp(p.y, 18, 95)}%`;
+        el.innerHTML = `
+          <div class="player-name">${escapeHtml(p.name)}</div>
+          <div class="head"></div>
+          <div class="body"></div>
+          <div class="arm left"></div>
+          <div class="arm right"></div>
+          <div class="leg left"></div>
+          <div class="leg right"></div>
+        `;
+        stage.appendChild(el);
+      }
+    }
+
+    function renderMobs() {
+      stage.querySelectorAll(".mob").forEach(el => el.remove());
+
+      for (const mob of Object.values(mobs || {})) {
+        const el = document.createElement("div");
+        el.className = `mob ${mob.type}`;
+        el.style.left = `${mob.x}%`;
+        el.style.top = `${mob.y}%`;
+        el.innerHTML = `<div class="head"></div><div class="body"></div>`;
+        stage.appendChild(el);
+      }
+    }
+
+    async function spawnMobs() {
+      const types = ["zombie", "pig", "cow"];
+      const next = {};
+
+      for (let i = 0; i < 5; i++) {
+        next[`mob_${i}`] = {
+          type: types[Math.floor(Math.random() * types.length)],
+          x: 10 + Math.random() * 80,
+          y: 48 + Math.random() * 36
+        };
+      }
+
+      await set(mobsRef, next);
+    }
+
+    function applyWorldState() {
+      const isNight = worldState.time === "night";
+      stage.classList.toggle("night", isNight);
+      timeStatus.textContent = isNight ? "Night" : "Day";
+      weatherStatus.textContent = worldState.weather
+        ? worldState.weather[0].toUpperCase() + worldState.weather.slice(1)
+        : "Clear";
+      renderWeather(worldState.weather || "clear");
+    }
+
+    function renderWeather(weather) {
+      weatherLayer.innerHTML = "";
+
+      if (weather === "clear") return;
+
+      const count = weather === "snow" ? 45 : 70;
+
+      for (let i = 0; i < count; i++) {
+        const drop = document.createElement("span");
+        drop.className = weather === "snow" ? "weather-snow" : "weather-drop";
+        drop.style.left = `${Math.random() * 100}%`;
+        drop.style.animationDuration = `${0.8 + Math.random() * 1.8}s`;
+        drop.style.animationDelay = `${Math.random() * 2}s`;
+        weatherLayer.appendChild(drop);
+      }
+    }
+
+    async function cycleWeather() {
+      const current = weatherOptions.indexOf(worldState.weather || "clear");
+      const nextWeather = weatherOptions[(current + 1) % weatherOptions.length];
+      await update(stateRef, { weather: nextWeather });
+    }
+
+    async function toggleDayNight() {
+      const nextTime = worldState.time === "night" ? "day" : "night";
+      await update(stateRef, { time: nextTime });
+
+      if (nextTime === "night") {
+        spawnMobs();
+      }
+    }
+
+    let lastMove = 0;
+
+    async function movePlayer(dx, dy) {
+      if (!joined) return;
+
+      const speed = inventory.enchant_speed ? 1.8 : 1.3;
+
+      position.x = clamp(position.x + dx * speed, 3, 97);
+      position.y = clamp(position.y + dy * speed, 18, 95);
+
+      const now = Date.now();
+      if (now - lastMove > 70) {
+        lastMove = now;
+        syncMe();
+      }
+    }
+
+    function loop() {
+      let dx = 0;
+      let dy = 0;
+
+      if (keys.has("arrowleft") || keys.has("a")) dx -= 1;
+      if (keys.has("arrowright") || keys.has("d")) dx += 1;
+      if (keys.has("arrowup") || keys.has("w")) dy -= 1;
+      if (keys.has("arrowdown") || keys.has("s")) dy += 1;
+
+      if (dx || dy) movePlayer(dx, dy);
+
+      requestAnimationFrame(loop);
+    }
+
+    window.addEventListener("keydown", event => {
+      const key = event.key.toLowerCase();
+
+      if (["arrowleft", "arrowright", "arrowup", "arrowdown", "w", "a", "s", "d"].includes(key)) {
+        keys.add(key);
+        if (document.activeElement !== gamerTagInput) event.preventDefault();
+      }
+    });
+
+    window.addEventListener("keyup", event => keys.delete(event.key.toLowerCase()));
+
+    document.querySelectorAll("[data-move]").forEach(button => {
+      button.addEventListener("click", () => {
+        const dir = button.dataset.move;
+
+        if (dir === "up") movePlayer(0, -4);
+        if (dir === "down") movePlayer(0, 4);
+        if (dir === "left") movePlayer(-4, 0);
+        if (dir === "right") movePlayer(4, 0);
+      });
+    });
+
+    document.querySelectorAll("[data-craft]").forEach(button => {
+      button.addEventListener("click", () => {
+        const craft = button.dataset.craft;
+
+        if (craft === "wood_pickaxe" && inventory.wood >= 3) {
+          inventory.wood -= 3;
+          inventory.pickaxe += 1;
+          showNote("Crafted a wood pickaxe.");
+        } else if (craft === "stone_pickaxe" && inventory.wood >= 2 && inventory.stone >= 3) {
+          inventory.wood -= 2;
+          inventory.stone -= 3;
+          inventory.pickaxe += 1;
+          showNote("Crafted a stone pickaxe.");
+        } else if (craft === "axe" && inventory.wood >= 2 && inventory.stone >= 2) {
+          inventory.wood -= 2;
+          inventory.stone -= 2;
+          inventory.axe += 1;
+          showNote("Crafted an axe.");
+        } else {
+          showNote("Not enough materials.");
+        }
+
+        renderInventory();
+        syncMe();
+      });
+    });
+
+    document.querySelectorAll("[data-enchant]").forEach(button => {
+      button.addEventListener("click", () => {
+        const enchant = button.dataset.enchant;
+
+        if (inventory.stone < 2 || inventory.gold < 1) {
+          showNote("Need 2 stone and 1 gold to enchant.");
+          return;
+        }
+
+        inventory.stone -= 2;
+        inventory.gold -= 1;
+        inventory[`enchant_${enchant}`] = 1;
+
+        showNote(enchant === "speed" ? "Swift Mining enabled." : "Lucky Blocks enabled.");
+
+        renderInventory();
+        syncMe();
+      });
+    });
+
+    joinBtn.addEventListener("click", joinWorld);
+    leaveBtn.addEventListener("click", leaveWorld);
+    changeWeatherBtn.addEventListener("click", cycleWeather);
+    gamerTagInput.addEventListener("keydown", e => { if (e.key === "Enter") joinWorld(); });
+    characterSelect.addEventListener("change", () => {
+      localStorage.setItem("bpw_character", characterSelect.value);
+      syncMe();
+    });
+
+    onValue(playersRef, snap => renderPlayers(snap.val() || {}));
+    onValue(tilesRef, snap => { tiles = snap.val() || {}; renderTiles(); });
+    onValue(mobsRef, snap => { mobs = snap.val() || {}; renderMobs(); });
+    onValue(stateRef, snap => {
+      worldState = snap.val() || { time: "day", weather: "clear" };
+      applyWorldState();
+    });
+
+    window.addEventListener("beforeunload", () => {
+      if (myRef) remove(myRef);
+    });
+
+    setInterval(() => { if (joined) syncMe(); }, 10000);
+    setInterval(toggleDayNight, 90000);
+
+    seedWorld();
+    renderTools();
+    renderBlocks();
+    renderInventory();
+    loop();
+  </script>
+</body>
+</html>
