@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -427,10 +427,10 @@
           <div class="weather-layer" id="weatherLayer"></div>
         </div>
         <div class="mobile-controls" aria-label="Mobile movement controls">
-          <button class="btn secondary" type="button" data-move="up">▲</button>
-          <button class="btn secondary" type="button" data-move="left">◀</button>
-          <button class="btn secondary" type="button" data-move="right">▶</button>
-          <button class="btn secondary" type="button" data-move="down">▼</button>
+          <button class="btn secondary" type="button" data-move="up">â–²</button>
+          <button class="btn secondary" type="button" data-move="left">â—€</button>
+          <button class="btn secondary" type="button" data-move="right">â–¶</button>
+          <button class="btn secondary" type="button" data-move="down">â–¼</button>
         </div>
       </div>
 
@@ -489,7 +489,7 @@
     import { getDatabase, ref, set, update, onValue, onDisconnect, remove, get } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyDDVOIriZ8AjCFL6AjVFOZ-tVkTpKJG7ho",
+      apiKey: "AIzaSyBTdVJWAgVzzK8-JR8vCYnHC6KYsJxMBZ0",
       authDomain: "blockpartyserver-e3ec9.firebaseapp.com",
       databaseURL: "https://blockpartyserver-e3ec9-default-rtdb.firebaseio.com",
       projectId: "blockpartyserver-e3ec9",
@@ -743,7 +743,7 @@
       });
 
       playerList.innerHTML = active.length
-        ? active.map(([id, p]) => `<li>${escapeHtml(p.name)}${id === myId ? " ⭐" : ""}</li>`).join("")
+        ? active.map(([id, p]) => `<li>${escapeHtml(p.name)}${id === myId ? " â­" : ""}</li>`).join("")
         : "<li>No players yet</li>";
 
       for (const [id, p] of active) {
