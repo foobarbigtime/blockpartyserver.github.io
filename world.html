@@ -725,7 +725,7 @@
       weaponGrid.innerHTML = weapons.map(weapon => {
         const owned = weapon.id === "fists" || (inventory[weapon.id] || 0) > 0;
         const arrowsOk = weapon.id !== "bow" || (inventory.arrow || 0) > 0;
-        const disabled = owned && arrowsOk ? "" : "disabled";
+        const disabled = (!owned || !arrowsOk) ? "disabled" : "";
         const label = weapon.id === "bow" ? `${weapon.label} (${inventory.arrow || 0} arrows)` : weapon.label;
         return `<button class="item-btn ${weapon.id === selectedWeapon ? "active" : ""}" data-weapon="${weapon.id}" ${disabled}>${label}<br>Damage ${weapon.damage}</button>`;
       }).join("");
@@ -948,11 +948,13 @@
       else if (craft === "bow" && inventory.wood >= 3 && inventory.bone >= 1) { inventory.wood -= 3; inventory.bone -= 1; inventory.bow += 1; inventory.arrow += 6; showNote("Crafted a bow and 6 arrows."); }
       else showNote("Not enough materials.");
       renderInventory();
+      renderTools();
       syncMe();
     }));
 
     document.querySelectorAll("[data-enchant]").forEach(button => button.addEventListener("click", () => {
       const enchant = button.dataset.enchant;
+      if (inventory[`enchant_${enchant}`]) { showNote("You already have that enchantment."); return; }
       if (inventory.stone < 2 || inventory.gold < 1) { showNote("Need 2 stone and 1 gold to enchant."); return; }
       inventory.stone -= 2;
       inventory.gold -= 1;
@@ -980,7 +982,7 @@
 
     window.addEventListener("beforeunload", () => { if (myRef) remove(myRef); });
     setInterval(() => { if (joined) syncMe(); }, 10000);
-    setInterval(toggleDayNight, 120000);
+    setInterval(() => { if (joined) toggleDayNight(); }, 120000);
 
     seedWorld();
     renderTools();
