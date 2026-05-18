@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -131,6 +131,7 @@
       box-shadow: 4px 4px 0 rgba(0,0,0,0.35);
       padding: 0.75rem 1rem;
       transition: transform 0.08s ease, box-shadow 0.08s ease;
+      margin: 0.15rem;
     }
 
     .btn:hover,
@@ -144,7 +145,7 @@
 
     .game-layout {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 310px;
+      grid-template-columns: minmax(0, 1fr) 320px;
       gap: 1rem;
       align-items: start;
     }
@@ -185,6 +186,24 @@
     .moon { display: none; background: #e9f4ff; box-shadow: 0 0 24px #e9f4ff; }
     .world-stage.night .sun { display: none; }
     .world-stage.night .moon { display: block; }
+
+    .cloud {
+      position: absolute;
+      display: grid;
+      grid-template-columns: repeat(5, 22px);
+      grid-template-rows: repeat(2, 22px);
+      opacity: 0.9;
+      z-index: 1;
+      animation: cloudMove linear infinite;
+    }
+
+    .cloud span { background: white; border: 1px solid rgba(0,0,0,0.08); }
+    .cloud span:nth-child(1), .cloud span:nth-child(5), .cloud span:nth-child(6), .cloud span:nth-child(10) { opacity: 0; }
+    .cloud.one { top: 17%; left: -160px; animation-duration: 44s; }
+    .cloud.two { top: 31%; left: -260px; animation-duration: 62s; transform: scale(0.8); }
+    .world-stage.night .cloud { opacity: 0.18; }
+
+    @keyframes cloudMove { to { translate: 1300px 0; } }
 
     .weather-layer {
       position: absolute;
@@ -302,6 +321,10 @@
       height: 46px;
       transform: translate(-50%, -100%);
       z-index: 7;
+      cursor: crosshair;
+      background: transparent;
+      border: 0;
+      padding: 0;
     }
 
     .mob .head { left: 7px; width: 20px; height: 20px; }
@@ -309,6 +332,23 @@
     .mob.zombie .head, .mob.zombie .body { background: #48a85a; }
     .mob.pig .head, .mob.pig .body { background: #f2a6b7; }
     .mob.cow .head, .mob.cow .body { background: #f5f0df; }
+    .mob.skeleton .head, .mob.skeleton .body { background: #d9d9d9; }
+    .mob.creeper .head, .mob.creeper .body { background: #35b64a; }
+
+    .mob-health {
+      position: absolute;
+      left: 50%;
+      bottom: 50px;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.75);
+      color: white;
+      border: 2px solid rgba(255,255,255,0.7);
+      padding: 0.05rem 0.25rem;
+      font-size: 0.7rem;
+      font-weight: 900;
+      white-space: nowrap;
+      pointer-events: none;
+    }
 
     .side-panel {
       display: grid;
@@ -319,6 +359,7 @@
 
     .inventory-grid,
     .tool-grid,
+    .weapon-grid,
     .block-grid,
     .craft-grid,
     .enchant-grid {
@@ -327,7 +368,7 @@
     }
 
     .inventory-grid { grid-template-columns: repeat(2, 1fr); }
-    .tool-grid, .block-grid { grid-template-columns: repeat(2, 1fr); }
+    .tool-grid, .weapon-grid, .block-grid { grid-template-columns: repeat(2, 1fr); }
 
     .item-btn {
       cursor: pointer;
@@ -339,6 +380,7 @@
     }
 
     .item-btn.active { background: var(--gold); }
+    .item-btn:disabled { opacity: 0.45; cursor: not-allowed; }
     .stat { display: flex; justify-content: space-between; gap: 0.5rem; border-bottom: 2px dashed #333; padding: 0.25rem 0; font-weight: 900; }
 
     .mobile-controls {
@@ -391,7 +433,7 @@
       <h1>Live Block World</h1>
       <p>
         Enter a gamer tag, choose a character, move around with friends, place and break blocks,
-        craft tools, enchant items, and watch the world change from day to night.
+        craft tools, enchant items, defeat mobs, collect loot, and watch the world change from day to night.
       </p>
       <p><strong>Safety:</strong> use a gamer tag or nickname only. Do not use your real name.</p>
 
@@ -421,16 +463,18 @@
     <section class="game-layout">
       <div class="world-wrap">
         <div class="world-stage" id="worldStage" tabindex="0" aria-label="Live multiplayer block world">
+          <div class="cloud one" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+          <div class="cloud two" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
           <div class="sun"></div>
           <div class="moon"></div>
           <div class="tile-layer" id="tileLayer"></div>
           <div class="weather-layer" id="weatherLayer"></div>
         </div>
         <div class="mobile-controls" aria-label="Mobile movement controls">
-          <button class="btn secondary" type="button" data-move="up">â–²</button>
-          <button class="btn secondary" type="button" data-move="left">â—€</button>
-          <button class="btn secondary" type="button" data-move="right">â–¶</button>
-          <button class="btn secondary" type="button" data-move="down">â–¼</button>
+          <button class="btn secondary" type="button" data-move="up">▲</button>
+          <button class="btn secondary" type="button" data-move="left">◀</button>
+          <button class="btn secondary" type="button" data-move="right">▶</button>
+          <button class="btn secondary" type="button" data-move="down">▼</button>
         </div>
       </div>
 
@@ -444,12 +488,23 @@
           <h3>World</h3>
           <div class="stat"><span>Time</span><span id="timeStatus">Day</span></div>
           <div class="stat"><span>Weather</span><span id="weatherStatus">Clear</span></div>
-          <button class="btn secondary" id="changeWeatherBtn" type="button">Change Weather</button>
+          <button class="btn secondary" id="toggleTimeBtn" type="button">Switch Day/Night</button>
+          <button class="btn secondary" id="clearWeatherBtn" type="button">Clear Weather</button>
+          <button class="btn secondary" id="rainWeatherBtn" type="button">Rain</button>
+          <button class="btn secondary" id="snowWeatherBtn" type="button">Snow</button>
+          <button class="btn secondary" id="spawnMobsBtn" type="button">Spawn Mobs</button>
+          <button class="btn danger" id="resetWorldBtn" type="button">Reset Terrain</button>
         </div>
 
         <div class="panel">
           <h3>Tools</h3>
           <div class="tool-grid" id="toolGrid"></div>
+        </div>
+
+        <div class="panel">
+          <h3>Weapons</h3>
+          <div class="weapon-grid" id="weaponGrid"></div>
+          <p style="margin-bottom:0;">Select a weapon, then click a mob to defeat it and collect loot.</p>
         </div>
 
         <div class="panel">
@@ -468,6 +523,8 @@
             <button class="item-btn" data-craft="wood_pickaxe">Craft Wood Pickaxe</button>
             <button class="item-btn" data-craft="stone_pickaxe">Craft Stone Pickaxe</button>
             <button class="item-btn" data-craft="axe">Craft Axe</button>
+            <button class="item-btn" data-craft="sword">Craft Stone Sword</button>
+            <button class="item-btn" data-craft="bow">Craft Bow</button>
           </div>
         </div>
 
@@ -475,7 +532,7 @@
           <h3>Enchanting</h3>
           <div class="enchant-grid">
             <button class="item-btn" data-enchant="speed">Enchant: Swift Mining</button>
-            <button class="item-btn" data-enchant="luck">Enchant: Lucky Blocks</button>
+            <button class="item-btn" data-enchant="luck">Enchant: Lucky Loot</button>
           </div>
         </div>
       </aside>
@@ -489,7 +546,7 @@
     import { getDatabase, ref, set, update, onValue, onDisconnect, remove, get } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyBTdVJWAgVzzK8-JR8vCYnHC6KYsJxMBZ0",
+      apiKey: "AIzaSyDDVOIriZ8AjCFL6AjVFOZ-tVkTpKJG7ho",
       authDomain: "blockpartyserver-e3ec9.firebaseapp.com",
       databaseURL: "https://blockpartyserver-e3ec9-default-rtdb.firebaseio.com",
       projectId: "blockpartyserver-e3ec9",
@@ -511,11 +568,17 @@
     const joinBtn = document.getElementById("joinBtn");
     const leaveBtn = document.getElementById("leaveBtn");
     const toolGrid = document.getElementById("toolGrid");
+    const weaponGrid = document.getElementById("weaponGrid");
     const blockGrid = document.getElementById("blockGrid");
     const inventoryGrid = document.getElementById("inventoryGrid");
     const timeStatus = document.getElementById("timeStatus");
     const weatherStatus = document.getElementById("weatherStatus");
-    const changeWeatherBtn = document.getElementById("changeWeatherBtn");
+    const toggleTimeBtn = document.getElementById("toggleTimeBtn");
+    const clearWeatherBtn = document.getElementById("clearWeatherBtn");
+    const rainWeatherBtn = document.getElementById("rainWeatherBtn");
+    const snowWeatherBtn = document.getElementById("snowWeatherBtn");
+    const spawnMobsBtn = document.getElementById("spawnMobsBtn");
+    const resetWorldBtn = document.getElementById("resetWorldBtn");
 
     const playersRef = ref(db, "players");
     const worldRef = ref(db, "world");
@@ -527,7 +590,20 @@
     const height = 8;
     const blockTypes = ["grass", "dirt", "stone", "sand", "snow", "water", "wood"];
     const tools = ["hand", "pickaxe", "axe", "shovel", "bucket"];
-    const weatherOptions = ["clear", "rain", "snow"];
+    const weapons = [
+      { id: "fists", label: "Fists", damage: 1 },
+      { id: "wood_sword", label: "Wood Sword", damage: 2 },
+      { id: "stone_sword", label: "Stone Sword", damage: 4 },
+      { id: "bow", label: "Bow", damage: 3 },
+      { id: "battle_axe", label: "Battle Axe", damage: 5 }
+    ];
+    const mobStats = {
+      zombie: { health: 8, loot: ["rotten_flesh", "bone"] },
+      skeleton: { health: 7, loot: ["bone", "arrow"] },
+      creeper: { health: 6, loot: ["gunpowder", "gold"] },
+      pig: { health: 4, loot: ["porkchop"] },
+      cow: { health: 5, loot: ["leather", "beef"] }
+    };
 
     let myId = localStorage.getItem("bpw_id") || crypto.randomUUID();
     localStorage.setItem("bpw_id", myId);
@@ -539,8 +615,14 @@
     let position = { x: 50, y: 48 };
     let keys = new Set();
     let selectedTool = "hand";
+    let selectedWeapon = "fists";
     let selectedBlock = "grass";
-    let inventory = { grass: 10, dirt: 10, stone: 4, sand: 4, snow: 4, water: 2, wood: 8, gold: 1, pickaxe: 0, axe: 0, enchant_speed: 0, enchant_luck: 0 };
+    let inventory = {
+      grass: 10, dirt: 10, stone: 4, sand: 4, snow: 4, water: 2, wood: 8, gold: 1,
+      pickaxe: 0, axe: 0, wood_sword: 1, stone_sword: 0, bow: 0, battle_axe: 0, arrow: 5,
+      bone: 0, rotten_flesh: 0, gunpowder: 0, porkchop: 0, beef: 0, leather: 0,
+      enchant_speed: 0, enchant_luck: 0
+    };
     let tiles = {};
     let mobs = {};
     let worldState = { time: "day", weather: "clear" };
@@ -563,14 +645,8 @@
 
     function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
     function tileKey(x, y) { return `${x}_${y}`; }
-
     function escapeHtml(value) {
-      return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+      return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
     }
 
     function defaultTile(x, y) {
@@ -582,108 +658,96 @@
       return "stone";
     }
 
+    function buildDefaultTiles() {
+      const seeded = {};
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) seeded[tileKey(x, y)] = defaultTile(x, y);
+      }
+      return seeded;
+    }
+
     async function seedWorld() {
       const snap = await get(tilesRef);
       if (snap.exists()) return;
+      await update(worldRef, { tiles: buildDefaultTiles(), state: { time: "day", weather: "clear" } });
+    }
 
-      const seeded = {};
-      for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-          seeded[tileKey(x, y)] = defaultTile(x, y);
-        }
-      }
-
-      await update(worldRef, {
-        tiles: seeded,
-        state: { time: "day", weather: "clear" }
-      });
+    async function resetTerrain() {
+      await update(worldRef, { tiles: buildDefaultTiles(), mobs: {}, state: { time: "day", weather: "clear" } });
+      showNote("Terrain reset. Weather cleared.");
     }
 
     function renderTiles() {
       tileLayer.innerHTML = "";
-
-      for (let y = height - 1; y >= 0; y--) {
+      for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
           const key = tileKey(x, y);
           const type = tiles[key] || defaultTile(x, y);
           const tile = document.createElement("button");
-
           tile.type = "button";
           tile.className = `tile ${type}`;
           tile.title = `${type} block`;
           tile.dataset.x = x;
           tile.dataset.y = y;
           tile.addEventListener("click", () => useTile(x, y, type));
-
           tileLayer.appendChild(tile);
         }
       }
     }
 
     async function useTile(x, y, type) {
-      if (!joined) {
-        showNote("Join the world first.");
-        return;
-      }
-
+      if (!joined) { showNote("Join the world first."); return; }
       const key = tileKey(x, y);
-
       if (selectedTool === "hand") {
-        if ((inventory[selectedBlock] || 0) <= 0) {
-          showNote(`No ${selectedBlock} blocks left.`);
-          return;
-        }
-
+        if ((inventory[selectedBlock] || 0) <= 0) { showNote(`No ${selectedBlock} blocks left.`); return; }
         inventory[selectedBlock] -= 1;
         await set(ref(db, `world/tiles/${key}`), selectedBlock);
         showNote(`Placed ${selectedBlock}.`);
       } else {
-        if (type === "empty") {
-          showNote("Nothing to collect there.");
-          return;
-        }
-
+        if (type === "empty") { showNote("Nothing to collect there."); return; }
         inventory[type] = (inventory[type] || 0) + 1;
         await set(ref(db, `world/tiles/${key}`), "empty");
         showNote(`${selectedTool} collected ${type}.`);
       }
-
       renderInventory();
       syncMe();
     }
 
     function renderTools() {
-      toolGrid.innerHTML = tools
-        .map(tool => `<button class="item-btn ${tool === selectedTool ? "active" : ""}" data-tool="${tool}">${tool}</button>`)
-        .join("");
+      toolGrid.innerHTML = tools.map(tool => `<button class="item-btn ${tool === selectedTool ? "active" : ""}" data-tool="${tool}">${tool}</button>`).join("");
+      toolGrid.querySelectorAll("[data-tool]").forEach(button => button.addEventListener("click", () => {
+        selectedTool = button.dataset.tool;
+        renderTools();
+      }));
+    }
 
-      toolGrid.querySelectorAll("[data-tool]").forEach(button => {
-        button.addEventListener("click", () => {
-          selectedTool = button.dataset.tool;
-          renderTools();
-        });
-      });
+    function renderWeapons() {
+      weaponGrid.innerHTML = weapons.map(weapon => {
+        const owned = weapon.id === "fists" || (inventory[weapon.id] || 0) > 0;
+        const arrowsOk = weapon.id !== "bow" || (inventory.arrow || 0) > 0;
+        const disabled = owned && arrowsOk ? "" : "disabled";
+        const label = weapon.id === "bow" ? `${weapon.label} (${inventory.arrow || 0} arrows)` : weapon.label;
+        return `<button class="item-btn ${weapon.id === selectedWeapon ? "active" : ""}" data-weapon="${weapon.id}" ${disabled}>${label}<br>Damage ${weapon.damage}</button>`;
+      }).join("");
+      weaponGrid.querySelectorAll("[data-weapon]").forEach(button => button.addEventListener("click", () => {
+        selectedWeapon = button.dataset.weapon;
+        renderWeapons();
+      }));
     }
 
     function renderBlocks() {
-      blockGrid.innerHTML = blockTypes
-        .map(block => `<button class="item-btn ${block === selectedBlock ? "active" : ""}" data-block="${block}">${block}</button>`)
-        .join("");
-
-      blockGrid.querySelectorAll("[data-block]").forEach(button => {
-        button.addEventListener("click", () => {
-          selectedBlock = button.dataset.block;
-          selectedTool = "hand";
-          renderBlocks();
-          renderTools();
-        });
-      });
+      blockGrid.innerHTML = blockTypes.map(block => `<button class="item-btn ${block === selectedBlock ? "active" : ""}" data-block="${block}">${block}</button>`).join("");
+      blockGrid.querySelectorAll("[data-block]").forEach(button => button.addEventListener("click", () => {
+        selectedBlock = button.dataset.block;
+        selectedTool = "hand";
+        renderBlocks();
+        renderTools();
+      }));
     }
 
     function renderInventory() {
-      inventoryGrid.innerHTML = Object.entries(inventory)
-        .map(([item, count]) => `<div class="stat"><span>${item}</span><span>${count}</span></div>`)
-        .join("");
+      renderWeapons();
+      inventoryGrid.innerHTML = Object.entries(inventory).map(([item, count]) => `<div class="stat"><span>${item}</span><span>${count}</span></div>`).join("");
     }
 
     function playerData() {
@@ -698,117 +762,121 @@
     }
 
     async function syncMe() {
-      if (joined && myRef) {
-        await set(myRef, playerData());
-      }
+      if (joined && myRef) await set(myRef, playerData());
     }
 
     async function joinWorld() {
       const name = cleanName(gamerTagInput.value);
-
-      if (!name) {
-        showNote("Enter a gamer tag first. No real names.");
-        return;
-      }
-
+      if (!name) { showNote("Enter a gamer tag first. No real names."); return; }
       localStorage.setItem("bpw_name", name);
       localStorage.setItem("bpw_character", characterSelect.value);
       gamerTagInput.value = name;
-
       joined = true;
       myRef = ref(db, `players/${myId}`);
-
       await set(myRef, playerData());
       await onDisconnect(myRef).remove();
-
       stage.focus();
       showNote(`${name} joined the world!`);
     }
 
     async function leaveWorld() {
-      if (myRef) {
-        await remove(myRef);
-      }
-
+      if (myRef) await remove(myRef);
       joined = false;
       showNote("You left the world.");
     }
 
     function renderPlayers(players) {
       stage.querySelectorAll(".player").forEach(el => el.remove());
-
       const now = Date.now();
-      const active = Object.entries(players || {}).filter(([, p]) => {
-        return p && p.name && now - Number(p.lastSeen || 0) < 45000;
-      });
-
-      playerList.innerHTML = active.length
-        ? active.map(([id, p]) => `<li>${escapeHtml(p.name)}${id === myId ? " â­" : ""}</li>`).join("")
-        : "<li>No players yet</li>";
-
+      const active = Object.entries(players || {}).filter(([, p]) => p && p.name && now - Number(p.lastSeen || 0) < 45000);
+      playerList.innerHTML = active.length ? active.map(([id, p]) => `<li>${escapeHtml(p.name)}${id === myId ? " ⭐" : ""}</li>`).join("") : "<li>No players yet</li>";
       for (const [id, p] of active) {
         const el = document.createElement("div");
         el.className = `player ${p.character || "steve"} ${id === myId ? "local" : ""}`;
         el.style.left = `${clamp(p.x, 3, 97)}%`;
         el.style.top = `${clamp(p.y, 18, 95)}%`;
-        el.innerHTML = `
-          <div class="player-name">${escapeHtml(p.name)}</div>
-          <div class="head"></div>
-          <div class="body"></div>
-          <div class="arm left"></div>
-          <div class="arm right"></div>
-          <div class="leg left"></div>
-          <div class="leg right"></div>
-        `;
+        el.innerHTML = `<div class="player-name">${escapeHtml(p.name)}</div><div class="head"></div><div class="body"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div>`;
         stage.appendChild(el);
       }
     }
 
     function renderMobs() {
       stage.querySelectorAll(".mob").forEach(el => el.remove());
-
-      for (const mob of Object.values(mobs || {})) {
-        const el = document.createElement("div");
+      for (const [mobId, mob] of Object.entries(mobs || {})) {
+        const el = document.createElement("button");
+        el.type = "button";
         el.className = `mob ${mob.type}`;
         el.style.left = `${mob.x}%`;
         el.style.top = `${mob.y}%`;
-        el.innerHTML = `<div class="head"></div><div class="body"></div>`;
+        el.title = `${mob.type} - ${mob.health || 1} health`;
+        el.innerHTML = `<div class="mob-health">❤ ${mob.health || 1}</div><div class="head"></div><div class="body"></div>`;
+        el.addEventListener("click", event => {
+          event.stopPropagation();
+          attackMob(mobId, mob);
+        });
         stage.appendChild(el);
       }
     }
 
-    async function spawnMobs() {
-      const types = ["zombie", "pig", "cow"];
-      const next = {};
+    async function attackMob(mobId, mob) {
+      if (!joined) { showNote("Join the world before fighting mobs."); return; }
+      const weapon = weapons.find(item => item.id === selectedWeapon) || weapons[0];
+      if (weapon.id !== "fists" && (inventory[weapon.id] || 0) <= 0) { showNote(`You do not have a ${weapon.label}.`); return; }
+      if (weapon.id === "bow") {
+        if ((inventory.arrow || 0) <= 0) { showNote("You are out of arrows."); return; }
+        inventory.arrow -= 1;
+      }
+      const damage = weapon.damage + (inventory.enchant_luck ? 1 : 0);
+      const newHealth = Number(mob.health || 1) - damage;
+      if (newHealth > 0) {
+        await update(ref(db, `world/mobs/${mobId}`), { health: newHealth });
+        showNote(`${weapon.label} hit ${mob.type} for ${damage}.`);
+      } else {
+        await remove(ref(db, `world/mobs/${mobId}`));
+        giveMobLoot(mob.type);
+        showNote(`Defeated ${mob.type}! Loot added to inventory.`);
+      }
+      renderInventory();
+      syncMe();
+    }
 
-      for (let i = 0; i < 5; i++) {
-        next[`mob_${i}`] = {
-          type: types[Math.floor(Math.random() * types.length)],
+    function giveMobLoot(type) {
+      const stats = mobStats[type] || { loot: ["bone"] };
+      const lootCount = inventory.enchant_luck ? 2 : 1;
+      for (let i = 0; i < lootCount; i++) {
+        const loot = stats.loot[Math.floor(Math.random() * stats.loot.length)];
+        inventory[loot] = (inventory[loot] || 0) + 1;
+      }
+    }
+
+    async function spawnMobs() {
+      const types = ["zombie", "skeleton", "creeper", "pig", "cow"];
+      const next = {};
+      for (let i = 0; i < 7; i++) {
+        const type = types[Math.floor(Math.random() * types.length)];
+        next[`mob_${Date.now()}_${i}`] = {
+          type,
+          health: mobStats[type].health,
           x: 10 + Math.random() * 80,
           y: 48 + Math.random() * 36
         };
       }
-
       await set(mobsRef, next);
+      showNote("Mobs spawned.");
     }
 
     function applyWorldState() {
       const isNight = worldState.time === "night";
       stage.classList.toggle("night", isNight);
       timeStatus.textContent = isNight ? "Night" : "Day";
-      weatherStatus.textContent = worldState.weather
-        ? worldState.weather[0].toUpperCase() + worldState.weather.slice(1)
-        : "Clear";
+      weatherStatus.textContent = worldState.weather ? worldState.weather[0].toUpperCase() + worldState.weather.slice(1) : "Clear";
       renderWeather(worldState.weather || "clear");
     }
 
     function renderWeather(weather) {
       weatherLayer.innerHTML = "";
-
       if (weather === "clear") return;
-
       const count = weather === "snow" ? 45 : 70;
-
       for (let i = 0; i < count; i++) {
         const drop = document.createElement("span");
         drop.className = weather === "snow" ? "weather-snow" : "weather-drop";
@@ -819,31 +887,24 @@
       }
     }
 
-    async function cycleWeather() {
-      const current = weatherOptions.indexOf(worldState.weather || "clear");
-      const nextWeather = weatherOptions[(current + 1) % weatherOptions.length];
-      await update(stateRef, { weather: nextWeather });
+    async function setWeather(weather) {
+      await update(stateRef, { weather });
+      showNote(weather === "clear" ? "Weather cleared. Sun and clouds are back." : `${weather} started.`);
     }
 
     async function toggleDayNight() {
       const nextTime = worldState.time === "night" ? "day" : "night";
       await update(stateRef, { time: nextTime });
-
-      if (nextTime === "night") {
-        spawnMobs();
-      }
+      showNote(nextTime === "night" ? "Night has fallen." : "Daytime is back.");
+      if (nextTime === "night") spawnMobs();
     }
 
     let lastMove = 0;
-
     async function movePlayer(dx, dy) {
       if (!joined) return;
-
       const speed = inventory.enchant_speed ? 1.8 : 1.3;
-
       position.x = clamp(position.x + dx * speed, 3, 97);
       position.y = clamp(position.y + dy * speed, 18, 95);
-
       const now = Date.now();
       if (now - lastMove > 70) {
         lastMove = now;
@@ -852,114 +913,78 @@
     }
 
     function loop() {
-      let dx = 0;
-      let dy = 0;
-
+      let dx = 0, dy = 0;
       if (keys.has("arrowleft") || keys.has("a")) dx -= 1;
       if (keys.has("arrowright") || keys.has("d")) dx += 1;
       if (keys.has("arrowup") || keys.has("w")) dy -= 1;
       if (keys.has("arrowdown") || keys.has("s")) dy += 1;
-
       if (dx || dy) movePlayer(dx, dy);
-
       requestAnimationFrame(loop);
     }
 
     window.addEventListener("keydown", event => {
       const key = event.key.toLowerCase();
-
       if (["arrowleft", "arrowright", "arrowup", "arrowdown", "w", "a", "s", "d"].includes(key)) {
         keys.add(key);
         if (document.activeElement !== gamerTagInput) event.preventDefault();
       }
     });
-
     window.addEventListener("keyup", event => keys.delete(event.key.toLowerCase()));
 
-    document.querySelectorAll("[data-move]").forEach(button => {
-      button.addEventListener("click", () => {
-        const dir = button.dataset.move;
+    document.querySelectorAll("[data-move]").forEach(button => button.addEventListener("click", () => {
+      const dir = button.dataset.move;
+      if (dir === "up") movePlayer(0, -4);
+      if (dir === "down") movePlayer(0, 4);
+      if (dir === "left") movePlayer(-4, 0);
+      if (dir === "right") movePlayer(4, 0);
+    }));
 
-        if (dir === "up") movePlayer(0, -4);
-        if (dir === "down") movePlayer(0, 4);
-        if (dir === "left") movePlayer(-4, 0);
-        if (dir === "right") movePlayer(4, 0);
-      });
-    });
+    document.querySelectorAll("[data-craft]").forEach(button => button.addEventListener("click", () => {
+      const craft = button.dataset.craft;
+      if (craft === "wood_pickaxe" && inventory.wood >= 3) { inventory.wood -= 3; inventory.pickaxe += 1; showNote("Crafted a wood pickaxe."); }
+      else if (craft === "stone_pickaxe" && inventory.wood >= 2 && inventory.stone >= 3) { inventory.wood -= 2; inventory.stone -= 3; inventory.pickaxe += 1; showNote("Crafted a stone pickaxe."); }
+      else if (craft === "axe" && inventory.wood >= 2 && inventory.stone >= 2) { inventory.wood -= 2; inventory.stone -= 2; inventory.axe += 1; inventory.battle_axe += 1; showNote("Crafted an axe."); }
+      else if (craft === "sword" && inventory.wood >= 1 && inventory.stone >= 2) { inventory.wood -= 1; inventory.stone -= 2; inventory.stone_sword += 1; showNote("Crafted a stone sword."); }
+      else if (craft === "bow" && inventory.wood >= 3 && inventory.bone >= 1) { inventory.wood -= 3; inventory.bone -= 1; inventory.bow += 1; inventory.arrow += 6; showNote("Crafted a bow and 6 arrows."); }
+      else showNote("Not enough materials.");
+      renderInventory();
+      syncMe();
+    }));
 
-    document.querySelectorAll("[data-craft]").forEach(button => {
-      button.addEventListener("click", () => {
-        const craft = button.dataset.craft;
-
-        if (craft === "wood_pickaxe" && inventory.wood >= 3) {
-          inventory.wood -= 3;
-          inventory.pickaxe += 1;
-          showNote("Crafted a wood pickaxe.");
-        } else if (craft === "stone_pickaxe" && inventory.wood >= 2 && inventory.stone >= 3) {
-          inventory.wood -= 2;
-          inventory.stone -= 3;
-          inventory.pickaxe += 1;
-          showNote("Crafted a stone pickaxe.");
-        } else if (craft === "axe" && inventory.wood >= 2 && inventory.stone >= 2) {
-          inventory.wood -= 2;
-          inventory.stone -= 2;
-          inventory.axe += 1;
-          showNote("Crafted an axe.");
-        } else {
-          showNote("Not enough materials.");
-        }
-
-        renderInventory();
-        syncMe();
-      });
-    });
-
-    document.querySelectorAll("[data-enchant]").forEach(button => {
-      button.addEventListener("click", () => {
-        const enchant = button.dataset.enchant;
-
-        if (inventory.stone < 2 || inventory.gold < 1) {
-          showNote("Need 2 stone and 1 gold to enchant.");
-          return;
-        }
-
-        inventory.stone -= 2;
-        inventory.gold -= 1;
-        inventory[`enchant_${enchant}`] = 1;
-
-        showNote(enchant === "speed" ? "Swift Mining enabled." : "Lucky Blocks enabled.");
-
-        renderInventory();
-        syncMe();
-      });
-    });
+    document.querySelectorAll("[data-enchant]").forEach(button => button.addEventListener("click", () => {
+      const enchant = button.dataset.enchant;
+      if (inventory.stone < 2 || inventory.gold < 1) { showNote("Need 2 stone and 1 gold to enchant."); return; }
+      inventory.stone -= 2;
+      inventory.gold -= 1;
+      inventory[`enchant_${enchant}`] = 1;
+      showNote(enchant === "speed" ? "Swift Mining enabled." : "Lucky Loot enabled.");
+      renderInventory();
+      syncMe();
+    }));
 
     joinBtn.addEventListener("click", joinWorld);
     leaveBtn.addEventListener("click", leaveWorld);
-    changeWeatherBtn.addEventListener("click", cycleWeather);
+    toggleTimeBtn.addEventListener("click", toggleDayNight);
+    clearWeatherBtn.addEventListener("click", () => setWeather("clear"));
+    rainWeatherBtn.addEventListener("click", () => setWeather("rain"));
+    snowWeatherBtn.addEventListener("click", () => setWeather("snow"));
+    spawnMobsBtn.addEventListener("click", spawnMobs);
+    resetWorldBtn.addEventListener("click", resetTerrain);
     gamerTagInput.addEventListener("keydown", e => { if (e.key === "Enter") joinWorld(); });
-    characterSelect.addEventListener("change", () => {
-      localStorage.setItem("bpw_character", characterSelect.value);
-      syncMe();
-    });
+    characterSelect.addEventListener("change", () => { localStorage.setItem("bpw_character", characterSelect.value); syncMe(); });
 
     onValue(playersRef, snap => renderPlayers(snap.val() || {}));
     onValue(tilesRef, snap => { tiles = snap.val() || {}; renderTiles(); });
     onValue(mobsRef, snap => { mobs = snap.val() || {}; renderMobs(); });
-    onValue(stateRef, snap => {
-      worldState = snap.val() || { time: "day", weather: "clear" };
-      applyWorldState();
-    });
+    onValue(stateRef, snap => { worldState = snap.val() || { time: "day", weather: "clear" }; applyWorldState(); });
 
-    window.addEventListener("beforeunload", () => {
-      if (myRef) remove(myRef);
-    });
-
+    window.addEventListener("beforeunload", () => { if (myRef) remove(myRef); });
     setInterval(() => { if (joined) syncMe(); }, 10000);
-    setInterval(toggleDayNight, 90000);
+    setInterval(toggleDayNight, 120000);
 
     seedWorld();
     renderTools();
+    renderWeapons();
     renderBlocks();
     renderInventory();
     loop();
