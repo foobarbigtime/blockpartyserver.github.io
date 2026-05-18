@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,6 +7,7 @@
   <style>
     :root {
       --sky-day: #78c8ff;
+      --sky-sunset: #ff9a76;
       --sky-night: #101c3d;
       --grass: #45b83d;
       --dirt: #8b5a2b;
@@ -17,8 +17,12 @@
       --water: #338ee8;
       --wood: #9b642f;
       --gold: #ffd84d;
+      --lava: #ff5c22;
+      --diamond: #6df7ff;
       --ink: #1f1f1f;
       --panel: rgba(255,255,255,0.94);
+      --danger: #ff5e5e;
+      --ok: #4ed66d;
     }
 
     * { box-sizing: border-box; }
@@ -31,6 +35,9 @@
       background: linear-gradient(var(--sky-day), #3b8eea);
       overflow-x: hidden;
     }
+
+    body.night-bg { background: linear-gradient(#081126, #142249 45%, #1e4025); }
+    body.sunset-bg { background: linear-gradient(var(--sky-sunset), #7e5fd6 60%, #345322); }
 
     .topbar {
       position: sticky;
@@ -74,17 +81,11 @@
       box-shadow: 2px 2px 0 rgba(0,0,0,0.25);
     }
 
-    .topbar a:hover,
-    .topbar a:focus { background: var(--gold); color: #222; }
+    .topbar a:hover, .topbar a:focus { background: var(--gold); color: #222; }
 
-    .page {
-      width: min(1280px, 100%);
-      margin: 0 auto;
-      padding: 1rem;
-    }
+    .page { width: min(1320px, 100%); margin: 0 auto; padding: 1rem; }
 
-    .hero-card,
-    .panel {
+    .hero-card, .panel {
       background: var(--panel);
       border: 6px solid #222;
       box-shadow: 9px 9px 0 rgba(0,0,0,0.25);
@@ -93,35 +94,12 @@
     }
 
     h1, h2, h3 { margin-top: 0; }
+    h1 { font-size: clamp(2rem, 6vw, 4rem); margin-bottom: 0.3rem; color: #243f16; text-shadow: 3px 3px 0 rgba(0,0,0,0.18); }
+    .tiny { font-size: 0.86rem; opacity: 0.85; }
 
-    h1 {
-      font-size: clamp(2rem, 6vw, 4rem);
-      margin-bottom: 0.3rem;
-      color: #243f16;
-      text-shadow: 3px 3px 0 rgba(0,0,0,0.18);
-    }
-
-    .setup-grid {
-      display: grid;
-      grid-template-columns: 1.2fr 0.8fr 0.8fr;
-      gap: 0.75rem;
-      align-items: end;
-    }
-
-    label {
-      display: block;
-      font-weight: 900;
-      margin-bottom: 0.25rem;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 0.75rem;
-      border: 4px solid #222;
-      background: white;
-      font-weight: 900;
-      box-shadow: inset 3px 3px 0 rgba(0,0,0,0.12);
-    }
+    .setup-grid { display: grid; grid-template-columns: 1.2fr 0.8fr 1fr; gap: 0.75rem; align-items: end; }
+    label { display: block; font-weight: 900; margin-bottom: 0.25rem; }
+    input, select { width: 100%; padding: 0.75rem; border: 4px solid #222; background: white; font-weight: 900; box-shadow: inset 3px 3px 0 rgba(0,0,0,0.12); }
 
     .btn {
       cursor: pointer;
@@ -130,130 +108,79 @@
       color: #222;
       font-weight: 900;
       box-shadow: 4px 4px 0 rgba(0,0,0,0.35);
-      padding: 0.75rem 1rem;
+      padding: 0.7rem 0.9rem;
       transition: transform 0.08s ease, box-shadow 0.08s ease;
       margin: 0.15rem;
     }
-
-    .btn:hover,
-    .btn:focus {
-      transform: translate(-2px, -2px);
-      box-shadow: 6px 6px 0 rgba(0,0,0,0.35);
-    }
-
+    .btn:hover, .btn:focus { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 rgba(0,0,0,0.35); }
     .btn.secondary { background: #d9f2ff; }
     .btn.danger { background: #ff8b8b; }
+    .btn.good { background: #a9ffbd; }
 
-    .game-layout {
+    .game-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 1rem; align-items: start; }
+    .world-wrap { background: #111; border: 6px solid #050505; padding: 0.6rem; box-shadow: 9px 9px 0 rgba(0,0,0,0.35); }
+
+    .hud {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 320px;
-      gap: 1rem;
-      align-items: start;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.4rem;
+      margin-bottom: 0.6rem;
     }
-
-    .world-wrap {
-      background: #111;
-      border: 6px solid #050505;
-      padding: 0.6rem;
-      box-shadow: 9px 9px 0 rgba(0,0,0,0.35);
-    }
+    .hud-card { background: #fff; border: 4px solid #222; padding: 0.35rem 0.45rem; font-weight: 900; box-shadow: 3px 3px 0 rgba(0,0,0,0.2); }
+    .bar { height: 12px; background: #222; border: 2px solid #222; margin-top: 0.2rem; overflow: hidden; }
+    .bar > span { display: block; height: 100%; width: 100%; background: var(--ok); transition: width .2s; }
+    .bar.health > span { background: var(--danger); }
+    .bar.xp > span { background: var(--diamond); }
 
     .world-stage {
       position: relative;
       width: 100%;
       aspect-ratio: 16 / 9;
-      min-height: 420px;
+      min-height: 430px;
       overflow: hidden;
       border: 4px solid #333;
-      background: linear-gradient(var(--sky-day) 0 55%, #45b83d 55% 66%, #8b5a2b 66% 100%);
+      background: linear-gradient(var(--sky-day) 0 54%, #45b83d 54% 66%, #8b5a2b 66% 100%);
       touch-action: none;
+      user-select: none;
     }
+    .world-stage.night { background: linear-gradient(var(--sky-night) 0 54%, #234a28 54% 66%, #4b2d17 66% 100%); }
+    .world-stage.sunset { background: linear-gradient(var(--sky-sunset) 0 54%, #5d8f32 54% 66%, #7b4524 66% 100%); }
 
-    .world-stage.night {
-      background: linear-gradient(var(--sky-night) 0 55%, #234a28 55% 66%, #4b2d17 66% 100%);
-    }
+    .stars { position: absolute; inset: 0; z-index: 0; opacity: 0; transition: opacity .4s; pointer-events: none; }
+    .world-stage.night .stars { opacity: 1; }
+    .star { position: absolute; width: 3px; height: 3px; background: white; box-shadow: 0 0 6px white; }
 
     .sun, .moon {
-      position: absolute;
-      top: 8%;
-      right: 10%;
-      width: 54px;
-      height: 54px;
-      border: 4px solid rgba(0,0,0,0.3);
-      z-index: 1;
+      position: absolute; top: 8%; right: 10%; width: 54px; height: 54px;
+      border: 4px solid rgba(0,0,0,0.3); z-index: 1;
     }
-
     .sun { background: #ffe66b; box-shadow: 0 0 30px #ffe66b; }
-    .moon { display: none; background: #e9f4ff; box-shadow: 0 0 24px #e9f4ff; }
+    .moon { display: none; background: #e9f4ff; box-shadow: 0 0 24px #e9f4ff; border-radius: 50%; }
     .world-stage.night .sun { display: none; }
     .world-stage.night .moon { display: block; }
+    .world-stage.sunset .sun { top: 35%; right: 7%; background: #ffdf7a; }
 
-    .cloud {
-      position: absolute;
-      display: grid;
-      grid-template-columns: repeat(5, 22px);
-      grid-template-rows: repeat(2, 22px);
-      opacity: 0.9;
-      z-index: 1;
-      animation: cloudMove linear infinite;
-    }
-
+    .cloud { position: absolute; display: grid; grid-template-columns: repeat(5, 22px); grid-template-rows: repeat(2, 22px); opacity: 0.9; z-index: 1; animation: cloudMove linear infinite; }
     .cloud span { background: white; border: 1px solid rgba(0,0,0,0.08); }
     .cloud span:nth-child(1), .cloud span:nth-child(5), .cloud span:nth-child(6), .cloud span:nth-child(10) { opacity: 0; }
     .cloud.one { top: 17%; left: -160px; animation-duration: 44s; }
     .cloud.two { top: 31%; left: -260px; animation-duration: 62s; transform: scale(0.8); }
+    .cloud.three { top: 9%; left: -360px; animation-duration: 75s; transform: scale(0.65); }
     .world-stage.night .cloud { opacity: 0.18; }
+    @keyframes cloudMove { to { translate: 1500px 0; } }
 
-    @keyframes cloudMove { to { translate: 1300px 0; } }
+    .weather-layer, .particle-layer, .projectile-layer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+    .weather-layer { z-index: 10; }
+    .particle-layer { z-index: 25; }
+    .projectile-layer { z-index: 24; }
+    .weather-drop { position: absolute; top: -20px; width: 3px; height: 18px; background: rgba(200,235,255,0.75); animation: fall linear infinite; }
+    .weather-snow { position: absolute; top: -20px; width: 8px; height: 8px; background: white; border: 1px solid rgba(0,0,0,0.1); animation: snow linear infinite; }
+    .weather-ember { position: absolute; top: -20px; width: 8px; height: 8px; background: #ff7a1a; border: 1px solid rgba(0,0,0,.2); animation: snow linear infinite; }
+    @keyframes fall { to { transform: translateY(760px); } }
+    @keyframes snow { to { transform: translate(30px, 760px); } }
 
-    .weather-layer {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 10;
-      overflow: hidden;
-    }
-
-    .weather-drop {
-      position: absolute;
-      top: -20px;
-      width: 3px;
-      height: 18px;
-      background: rgba(200,235,255,0.75);
-      animation: fall linear infinite;
-    }
-
-    .weather-snow {
-      position: absolute;
-      top: -20px;
-      width: 8px;
-      height: 8px;
-      background: white;
-      border: 1px solid rgba(0,0,0,0.1);
-      animation: snow linear infinite;
-    }
-
-    @keyframes fall { to { transform: translateY(720px); } }
-    @keyframes snow { to { transform: translate(30px, 720px); } }
-
-    .tile-layer {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      display: grid;
-      grid-template-columns: repeat(24, 1fr);
-      grid-template-rows: repeat(8, 1fr);
-      height: 45%;
-      z-index: 2;
-    }
-
-    .tile {
-      border: 1px solid rgba(0,0,0,0.24);
-      image-rendering: pixelated;
-      cursor: crosshair;
-    }
-
+    .tile-layer { position: absolute; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(24, 1fr); grid-template-rows: repeat(8, 1fr); height: 45%; z-index: 2; }
+    .tile { border: 1px solid rgba(0,0,0,0.24); image-rendering: pixelated; cursor: crosshair; position: relative; }
     .tile:hover { outline: 3px solid var(--gold); z-index: 3; }
     .tile.grass { background: linear-gradient(#52c647 0 35%, #8b5a2b 35%); }
     .tile.dirt { background: #8b5a2b; }
@@ -262,162 +189,76 @@
     .tile.snow { background: linear-gradient(#eef8ff 0 45%, #bcd9e8 45%); }
     .tile.water { background: linear-gradient(135deg, #5db7ff, #1e75d6); animation: water 1.4s ease-in-out infinite alternate; }
     .tile.wood { background: repeating-linear-gradient(90deg, #7b491f 0 8px, #a56a31 8px 16px); }
+    .tile.gold { background: radial-gradient(circle at 40% 40%, #fff8a8, #ffd84d 45%, #c89100); }
+    .tile.leaves { background: radial-gradient(circle, #71d765, #2e8e34); }
+    .tile.brick { background: repeating-linear-gradient(0deg, #9f3d2e 0 9px, #713026 9px 12px); }
+    .tile.lava { background: linear-gradient(135deg, #ffef3a, #ff5c22 45%, #7d1600); animation: lavaGlow .6s alternate infinite; }
+    .tile.diamond { background: radial-gradient(circle at 35% 30%, #e5ffff, #6df7ff 45%, #148a99); }
     .tile.empty { background: transparent; border-color: rgba(0,0,0,0.08); }
-
+    .tile.chest::after { content: "🎁"; position: absolute; inset: 0; display: grid; place-items: center; font-size: clamp(1rem, 2vw, 1.7rem); }
     @keyframes water { to { filter: brightness(1.18); } }
+    @keyframes lavaGlow { to { filter: brightness(1.35); } }
 
-    .player {
-      position: absolute;
-      width: 42px;
-      height: 74px;
-      transform: translate(-50%, -100%);
-      z-index: 8;
-    }
-
-    .player-name {
-      position: absolute;
-      left: 50%;
-      bottom: 78px;
-      transform: translateX(-50%);
-      white-space: nowrap;
-      background: rgba(0,0,0,0.75);
-      color: white;
-      border: 2px solid rgba(255,255,255,0.7);
-      padding: 0.12rem 0.35rem;
-      font-size: 0.78rem;
-      font-weight: 900;
-      pointer-events: none;
-    }
-
+    .player { position: absolute; width: 42px; height: 74px; transform: translate(-50%, -100%); z-index: 8; transition: filter .15s; }
+    .player.hit { filter: drop-shadow(0 0 10px red); }
+    .player-name { position: absolute; left: 50%; bottom: 78px; transform: translateX(-50%); white-space: nowrap; background: rgba(0,0,0,0.75); color: white; border: 2px solid rgba(255,255,255,0.7); padding: 0.12rem 0.35rem; font-size: 0.78rem; font-weight: 900; pointer-events: none; }
     .local .player-name { background: var(--gold); color: #222; border-color: #222; }
-
-    .head, .body, .arm, .leg {
-      position: absolute;
-      border: 3px solid rgba(0,0,0,0.35);
-    }
-
+    .head, .body, .arm, .leg { position: absolute; border: 3px solid rgba(0,0,0,0.35); }
     .head { left: 9px; top: 0; width: 24px; height: 24px; background: #c58b5b; }
     .head::before { content: ""; position: absolute; left: 5px; top: 8px; width: 4px; height: 4px; background: #222; box-shadow: 10px 0 #222, 5px 7px #7a3f26; }
     .body { left: 8px; top: 24px; width: 26px; height: 28px; background: #26a6c8; }
     .arm { top: 27px; width: 10px; height: 30px; background: #c58b5b; }
-    .arm.left { left: 0; }
-    .arm.right { right: 0; }
+    .arm.left { left: 0; } .arm.right { right: 0; }
     .leg { top: 52px; width: 13px; height: 22px; background: #2c4f9c; }
-    .leg.left { left: 8px; }
-    .leg.right { right: 8px; }
-
-    .alex .body { background: #6bbd45; }
-    .alex .leg { background: #5b3b8f; }
-    .knight .head { background: #cfcfcf; }
-    .knight .body, .knight .arm { background: #9d9d9d; }
-    .knight .leg { background: #666; }
+    .leg.left { left: 8px; } .leg.right { right: 8px; }
+    .alex .body { background: #6bbd45; } .alex .leg { background: #5b3b8f; }
+    .knight .head { background: #cfcfcf; } .knight .body, .knight .arm { background: #9d9d9d; } .knight .leg { background: #666; }
     .robot .head, .robot .body, .robot .arm, .robot .leg { background: #b7c7d6; }
     .ninja .head, .ninja .body, .ninja .arm, .ninja .leg { background: #222; }
     .creepercostume .head, .creepercostume .body, .creepercostume .arm, .creepercostume .leg { background: #35b64a; }
+    .wizard .head { background: #c58b5b; } .wizard .body, .wizard .arm { background: #6f42c1; } .wizard .leg { background: #3d246b; }
 
-    .mob {
-      position: absolute;
-      width: 34px;
-      height: 46px;
-      transform: translate(-50%, -100%);
-      z-index: 7;
-      cursor: crosshair;
-      background: transparent;
-      border: 0;
-      padding: 0;
-    }
-
-    .mob .head { left: 7px; width: 20px; height: 20px; }
-    .mob .body { left: 5px; top: 20px; width: 24px; height: 20px; }
+    .mob { position: absolute; width: 36px; height: 48px; transform: translate(-50%, -100%); z-index: 7; cursor: crosshair; background: transparent; border: 0; padding: 0; transition: transform .1s, filter .1s; }
+    .mob:hover { filter: drop-shadow(0 0 8px var(--gold)); }
+    .mob.hit { transform: translate(-50%, -100%) scale(1.12); filter: drop-shadow(0 0 10px red); }
+    .mob .head { left: 7px; width: 22px; height: 22px; }
+    .mob .body { left: 5px; top: 22px; width: 26px; height: 21px; }
     .mob.zombie .head, .mob.zombie .body { background: #48a85a; }
     .mob.pig .head, .mob.pig .body { background: #f2a6b7; }
     .mob.cow .head, .mob.cow .body { background: #f5f0df; }
     .mob.skeleton .head, .mob.skeleton .body { background: #d9d9d9; }
     .mob.creeper .head, .mob.creeper .body { background: #35b64a; }
+    .mob.spider .head, .mob.spider .body { background: #2d1b32; }
+    .mob.dragon .head, .mob.dragon .body { background: #7b2bff; }
+    .mob-health { position: absolute; left: 50%; bottom: 52px; transform: translateX(-50%); background: rgba(0,0,0,0.75); color: white; border: 2px solid rgba(255,255,255,0.7); padding: 0.05rem 0.25rem; font-size: 0.7rem; font-weight: 900; white-space: nowrap; pointer-events: none; }
 
-    .mob-health {
-      position: absolute;
-      left: 50%;
-      bottom: 50px;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.75);
-      color: white;
-      border: 2px solid rgba(255,255,255,0.7);
-      padding: 0.05rem 0.25rem;
-      font-size: 0.7rem;
-      font-weight: 900;
-      white-space: nowrap;
-      pointer-events: none;
-    }
+    .floating { position: absolute; z-index: 30; font-weight: 900; color: white; text-shadow: 2px 2px #000; animation: floatUp 900ms ease-out forwards; pointer-events: none; }
+    @keyframes floatUp { to { transform: translateY(-36px); opacity: 0; } }
+    .spark { position: absolute; width: 8px; height: 8px; background: var(--gold); border: 2px solid #222; animation: spark .55s ease-out forwards; }
+    @keyframes spark { to { transform: translate(var(--dx), var(--dy)) rotate(180deg); opacity: 0; } }
+    .arrow { position: absolute; width: 28px; height: 5px; background: #5b3518; border: 1px solid #221; transform-origin: left center; }
 
-    .side-panel {
-      display: grid;
-      gap: 1rem;
-    }
-
+    .side-panel { display: grid; gap: 1rem; }
     .panel h3 { margin-bottom: 0.5rem; }
-
-    .inventory-grid,
-    .tool-grid,
-    .weapon-grid,
-    .block-grid,
-    .craft-grid,
-    .enchant-grid {
-      display: grid;
-      gap: 0.45rem;
-    }
-
-    .inventory-grid { grid-template-columns: repeat(2, 1fr); }
+    .inventory-grid, .tool-grid, .weapon-grid, .block-grid, .craft-grid, .enchant-grid, .quest-grid { display: grid; gap: 0.45rem; }
+    .inventory-grid { grid-template-columns: repeat(2, 1fr); max-height: 340px; overflow: auto; padding-right: 0.25rem; }
     .tool-grid, .weapon-grid, .block-grid { grid-template-columns: repeat(2, 1fr); }
-
-    .item-btn {
-      cursor: pointer;
-      border: 3px solid #222;
-      background: white;
-      font-weight: 900;
-      padding: 0.45rem;
-      box-shadow: 3px 3px 0 rgba(0,0,0,0.18);
-    }
-
+    .item-btn { cursor: pointer; border: 3px solid #222; background: white; font-weight: 900; padding: 0.45rem; box-shadow: 3px 3px 0 rgba(0,0,0,0.18); text-align: left; }
     .item-btn.active { background: var(--gold); }
     .item-btn:disabled { opacity: 0.45; cursor: not-allowed; }
     .stat { display: flex; justify-content: space-between; gap: 0.5rem; border-bottom: 2px dashed #333; padding: 0.25rem 0; font-weight: 900; }
+    .quest { border: 3px solid #222; background: #f7fbff; padding: .45rem; font-weight: 900; }
+    .quest.done { background: #d8ffdf; }
 
-    .mobile-controls {
-      display: none;
-      grid-template-columns: repeat(3, 52px);
-      grid-template-rows: repeat(3, 52px);
-      gap: 0.3rem;
-      justify-content: center;
-      margin-top: 0.8rem;
-    }
-
-    .mobile-controls button:nth-child(1) { grid-column: 2; grid-row: 1; }
-    .mobile-controls button:nth-child(2) { grid-column: 1; grid-row: 2; }
-    .mobile-controls button:nth-child(3) { grid-column: 3; grid-row: 2; }
-    .mobile-controls button:nth-child(4) { grid-column: 2; grid-row: 3; }
-
-    .note {
-      position: fixed;
-      left: 50%;
-      bottom: 1rem;
-      transform: translateX(-50%);
-      background: #222;
-      color: white;
-      border: 4px solid var(--gold);
-      padding: 0.7rem 1rem;
-      z-index: 100;
-      box-shadow: 5px 5px 0 rgba(0,0,0,0.3);
-      display: none;
-      font-weight: 900;
-      text-align: center;
-    }
-
+    .mobile-controls { display: none; grid-template-columns: repeat(3, 52px); grid-template-rows: repeat(3, 52px); gap: 0.3rem; justify-content: center; margin-top: 0.8rem; }
+    .mobile-controls button:nth-child(1) { grid-column: 2; grid-row: 1; } .mobile-controls button:nth-child(2) { grid-column: 1; grid-row: 2; } .mobile-controls button:nth-child(3) { grid-column: 3; grid-row: 2; } .mobile-controls button:nth-child(4) { grid-column: 2; grid-row: 3; }
+    .note { position: fixed; left: 50%; bottom: 1rem; transform: translateX(-50%); background: #222; color: white; border: 4px solid var(--gold); padding: 0.7rem 1rem; z-index: 100; box-shadow: 5px 5px 0 rgba(0,0,0,0.3); display: none; font-weight: 900; text-align: center; max-width: min(90vw, 720px); }
     .note.show { display: block; }
 
-    @media (max-width: 900px) {
+    @media (max-width: 960px) {
       .setup-grid, .game-layout { grid-template-columns: 1fr; }
       .world-stage { min-height: 360px; }
+      .hud { grid-template-columns: repeat(2, 1fr); }
       .mobile-controls { display: grid; }
     }
   </style>
@@ -432,11 +273,10 @@
     <section class="hero-card">
       <h1>Live Block World</h1>
       <p>
-        Enter a gamer tag, choose a character, move around with friends, place and break blocks,
-        craft tools, enchant items, defeat mobs, collect loot, and watch the world change from day to night.
+        Build, mine, fight mobs, open treasure chests, level up, complete quests, change the weather,
+        and play with friends in a shared block world.
       </p>
       <p><strong>Safety:</strong> use a gamer tag or nickname only. Do not use your real name.</p>
-
       <div class="setup-grid">
         <div>
           <label for="gamerTagInput">Gamer tag</label>
@@ -451,23 +291,37 @@
             <option value="ninja">Ninja</option>
             <option value="robot">Robot</option>
             <option value="creepercostume">Creeper Costume</option>
+            <option value="wizard">Wizard</option>
           </select>
         </div>
         <div>
           <button class="btn" id="joinBtn" type="button">Join World</button>
           <button class="btn danger" id="leaveBtn" type="button">Leave</button>
+          <button class="btn secondary" id="saveBtn" type="button">Save Backpack</button>
         </div>
       </div>
+      <p class="tiny"><strong>Controls:</strong> WASD / arrow keys move. Click blocks to mine/place. Select a weapon then click mobs. Press <strong>Space</strong> to attack nearest mob.</p>
     </section>
 
     <section class="game-layout">
       <div class="world-wrap">
+        <div class="hud">
+          <div class="hud-card">Health <span id="healthText">100</span><div class="bar health"><span id="healthBar"></span></div></div>
+          <div class="hud-card">XP <span id="xpText">0 / 10</span><div class="bar xp"><span id="xpBar"></span></div></div>
+          <div class="hud-card">Level <span id="levelText">1</span></div>
+          <div class="hud-card">Coins <span id="coinText">0</span></div>
+          <div class="hud-card">Mode <span id="modeText">Place</span></div>
+        </div>
         <div class="world-stage" id="worldStage" tabindex="0" aria-label="Live multiplayer block world">
+          <div class="stars" id="stars" aria-hidden="true"></div>
           <div class="cloud one" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
           <div class="cloud two" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+          <div class="cloud three" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
           <div class="sun"></div>
           <div class="moon"></div>
           <div class="tile-layer" id="tileLayer"></div>
+          <div class="projectile-layer" id="projectileLayer"></div>
+          <div class="particle-layer" id="particleLayer"></div>
           <div class="weather-layer" id="weatherLayer"></div>
         </div>
         <div class="mobile-controls" aria-label="Mobile movement controls">
@@ -489,52 +343,46 @@
           <div class="stat"><span>Time</span><span id="timeStatus">Day</span></div>
           <div class="stat"><span>Weather</span><span id="weatherStatus">Clear</span></div>
           <button class="btn secondary" id="toggleTimeBtn" type="button">Switch Day/Night</button>
-          <button class="btn secondary" id="clearWeatherBtn" type="button">Clear Weather</button>
+          <button class="btn secondary" id="sunsetBtn" type="button">Sunset</button>
+          <button class="btn secondary" id="clearWeatherBtn" type="button">Clear</button>
           <button class="btn secondary" id="rainWeatherBtn" type="button">Rain</button>
           <button class="btn secondary" id="snowWeatherBtn" type="button">Snow</button>
-          <button class="btn secondary" id="spawnMobsBtn" type="button">Spawn Mobs</button>
+          <button class="btn secondary" id="meteorWeatherBtn" type="button">Meteor Shower</button>
+          <button class="btn good" id="spawnMobsBtn" type="button">Spawn Mobs</button>
+          <button class="btn good" id="bossBtn" type="button">Spawn Boss</button>
           <button class="btn danger" id="resetWorldBtn" type="button">Reset Terrain</button>
         </div>
 
         <div class="panel">
-          <h3>Tools</h3>
-          <div class="tool-grid" id="toolGrid"></div>
+          <h3>Action Mode</h3>
+          <button class="btn" id="placeModeBtn" type="button">Place Blocks</button>
+          <button class="btn secondary" id="mineModeBtn" type="button">Mine Blocks</button>
         </div>
 
-        <div class="panel">
-          <h3>Weapons</h3>
-          <div class="weapon-grid" id="weaponGrid"></div>
-          <p style="margin-bottom:0;">Select a weapon, then click a mob to defeat it and collect loot.</p>
-        </div>
-
-        <div class="panel">
-          <h3>Blocks</h3>
-          <div class="block-grid" id="blockGrid"></div>
-        </div>
-
-        <div class="panel">
-          <h3>Inventory</h3>
-          <div class="inventory-grid" id="inventoryGrid"></div>
-        </div>
-
+        <div class="panel"><h3>Tools</h3><div class="tool-grid" id="toolGrid"></div></div>
+        <div class="panel"><h3>Weapons</h3><div class="weapon-grid" id="weaponGrid"></div><p class="tiny">Space attacks the nearest mob. Bow uses arrows.</p></div>
+        <div class="panel"><h3>Blocks</h3><div class="block-grid" id="blockGrid"></div></div>
+        <div class="panel"><h3>Quests</h3><div class="quest-grid" id="questGrid"></div></div>
+        <div class="panel"><h3>Inventory</h3><div class="inventory-grid" id="inventoryGrid"></div></div>
         <div class="panel">
           <h3>Crafting</h3>
           <div class="craft-grid">
-            <button class="item-btn" data-craft="wood_pickaxe">Craft Wood Pickaxe</button>
-            <button class="item-btn" data-craft="stone_pickaxe">Craft Stone Pickaxe</button>
-            <button class="item-btn" data-craft="axe">Craft Axe</button>
-            <button class="item-btn" data-craft="shovel">Craft Shovel</button>
-            <button class="item-btn" data-craft="bucket">Craft Bucket</button>
-            <button class="item-btn" data-craft="sword">Craft Stone Sword</button>
-            <button class="item-btn" data-craft="bow">Craft Bow</button>
+            <button class="item-btn" data-craft="wood_pickaxe">Wood Pickaxe — 3 wood</button>
+            <button class="item-btn" data-craft="stone_pickaxe">Stone Pickaxe — 2 wood, 3 stone</button>
+            <button class="item-btn" data-craft="axe">Battle Axe — 2 wood, 2 stone</button>
+            <button class="item-btn" data-craft="shovel">Shovel — 1 wood, 1 stone</button>
+            <button class="item-btn" data-craft="bucket">Bucket — 2 wood, 2 stone</button>
+            <button class="item-btn" data-craft="sword">Stone Sword — 1 wood, 2 stone</button>
+            <button class="item-btn" data-craft="bow">Bow — 3 wood, 1 bone</button>
+            <button class="item-btn" data-craft="diamond_sword">Diamond Sword — 1 wood, 2 diamond</button>
           </div>
         </div>
-
         <div class="panel">
           <h3>Enchanting</h3>
           <div class="enchant-grid">
-            <button class="item-btn" data-enchant="speed">Enchant: Swift Mining</button>
-            <button class="item-btn" data-enchant="luck">Enchant: Lucky Loot</button>
+            <button class="item-btn" data-enchant="speed">Swift Mining — 2 stone, 1 gold</button>
+            <button class="item-btn" data-enchant="luck">Lucky Loot — 2 stone, 1 gold</button>
+            <button class="item-btn" data-enchant="guard">Guardian Heart — 3 gold, 1 diamond</button>
           </div>
         </div>
       </aside>
@@ -560,100 +408,71 @@
 
     let db;
     let isOffline = false;
-    try {
-      const app = initializeApp(firebaseConfig);
-      db = getDatabase(app);
-    } catch (e) {
-      console.warn("Firebase initialization failed. Switching to local offline mode.");
-      isOffline = true;
-    }
+    try { db = getDatabase(initializeApp(firebaseConfig)); }
+    catch (e) { console.warn("Firebase failed. Local offline mode enabled."); isOffline = true; }
 
-    const stage = document.getElementById("worldStage");
-    const tileLayer = document.getElementById("tileLayer");
-    const weatherLayer = document.getElementById("weatherLayer");
-    const playerList = document.getElementById("playerList");
-    const gamerTagInput = document.getElementById("gamerTagInput");
-    const characterSelect = document.getElementById("characterSelect");
-    const joinBtn = document.getElementById("joinBtn");
-    const leaveBtn = document.getElementById("leaveBtn");
-    const toolGrid = document.getElementById("toolGrid");
-    const weaponGrid = document.getElementById("weaponGrid");
-    const blockGrid = document.getElementById("blockGrid");
-    const inventoryGrid = document.getElementById("inventoryGrid");
-    const timeStatus = document.getElementById("timeStatus");
-    const weatherStatus = document.getElementById("weatherStatus");
-    const toggleTimeBtn = document.getElementById("toggleTimeBtn");
-    const clearWeatherBtn = document.getElementById("clearWeatherBtn");
-    const rainWeatherBtn = document.getElementById("rainWeatherBtn");
-    const snowWeatherBtn = document.getElementById("snowWeatherBtn");
-    const spawnMobsBtn = document.getElementById("spawnMobsBtn");
-    const resetWorldBtn = document.getElementById("resetWorldBtn");
+    const $ = id => document.getElementById(id);
+    const stage = $("worldStage"), tileLayer = $("tileLayer"), weatherLayer = $("weatherLayer"), particleLayer = $("particleLayer"), projectileLayer = $("projectileLayer");
+    const playerList = $("playerList"), gamerTagInput = $("gamerTagInput"), characterSelect = $("characterSelect"), joinBtn = $("joinBtn"), leaveBtn = $("leaveBtn"), saveBtn = $("saveBtn");
+    const toolGrid = $("toolGrid"), weaponGrid = $("weaponGrid"), blockGrid = $("blockGrid"), inventoryGrid = $("inventoryGrid"), questGrid = $("questGrid");
+    const timeStatus = $("timeStatus"), weatherStatus = $("weatherStatus"), modeText = $("modeText");
+    const healthText = $("healthText"), healthBar = $("healthBar"), xpText = $("xpText"), xpBar = $("xpBar"), levelText = $("levelText"), coinText = $("coinText");
 
-    const width = 24;
-    const height = 8;
-    const blockTypes = ["grass", "dirt", "stone", "sand", "snow", "water", "wood"];
+    const width = 24, height = 8;
+    const blockTypes = ["grass", "dirt", "stone", "sand", "snow", "water", "wood", "leaves", "brick", "gold", "diamond", "lava"];
     const tools = ["hand", "pickaxe", "axe", "shovel", "bucket"];
     const weapons = [
       { id: "fists", label: "Fists", damage: 1 },
       { id: "wood_sword", label: "Wood Sword", damage: 2 },
       { id: "stone_sword", label: "Stone Sword", damage: 4 },
       { id: "bow", label: "Bow", damage: 3 },
-      { id: "battle_axe", label: "Battle Axe", damage: 5 }
+      { id: "battle_axe", label: "Battle Axe", damage: 5 },
+      { id: "diamond_sword", label: "Diamond Sword", damage: 8 }
     ];
     const mobStats = {
-      zombie: { health: 8, loot: ["rotten_flesh", "bone"] },
-      skeleton: { health: 7, loot: ["bone", "arrow"] },
-      creeper: { health: 6, loot: ["gunpowder", "gold"] },
-      pig: { health: 4, loot: ["porkchop"] },
-      cow: { health: 5, loot: ["leather", "beef"] }
+      zombie: { health: 8, damage: 4, xp: 3, loot: ["rotten_flesh", "bone", "coin"] },
+      skeleton: { health: 7, damage: 5, xp: 4, loot: ["bone", "arrow", "coin"] },
+      creeper: { health: 6, damage: 8, xp: 5, loot: ["gunpowder", "gold", "coin"] },
+      pig: { health: 4, damage: 1, xp: 1, loot: ["porkchop", "coin"] },
+      cow: { health: 5, damage: 1, xp: 1, loot: ["leather", "beef", "coin"] },
+      spider: { health: 9, damage: 6, xp: 5, loot: ["string", "bone", "coin"] },
+      dragon: { health: 40, damage: 12, xp: 20, loot: ["diamond", "gold", "coin", "coin"] }
     };
+    const quests = [
+      { id: "mine10", label: "Mine 10 blocks", need: 10, stat: "mined", reward: { coin: 5, gold: 1 } },
+      { id: "defeat5", label: "Defeat 5 mobs", need: 5, stat: "kills", reward: { coin: 10, diamond: 1 } },
+      { id: "build15", label: "Place 15 blocks", need: 15, stat: "placed", reward: { coin: 8, brick: 8 } },
+      { id: "boss1", label: "Defeat the dragon", need: 1, stat: "bossKills", reward: { coin: 25, diamond: 3 } }
+    ];
 
     let myId = localStorage.getItem("bpw_id") || crypto.randomUUID();
     localStorage.setItem("bpw_id", myId);
     gamerTagInput.value = localStorage.getItem("bpw_name") || "";
     characterSelect.value = localStorage.getItem("bpw_character") || "steve";
 
-    let joined = false;
-    let position = { x: 50, y: 48 };
-    let keys = new Set();
-    let selectedTool = "hand";
-    let selectedWeapon = "fists";
-    let selectedBlock = "grass";
-    let inventory = {
-      grass: 10, dirt: 10, stone: 4, sand: 4, snow: 4, water: 2, wood: 8, gold: 1,
-      pickaxe: 0, axe: 0, shovel: 0, bucket: 0, wood_sword: 1, stone_sword: 0, bow: 0, battle_axe: 0, arrow: 5,
-      bone: 0, rotten_flesh: 0, gunpowder: 0, porkchop: 0, beef: 0, leather: 0,
-      enchant_speed: 0, enchant_luck: 0
+    const starterInventory = {
+      grass: 12, dirt: 12, stone: 5, sand: 5, snow: 4, water: 2, wood: 10, leaves: 2, brick: 0, gold: 1, diamond: 0, lava: 0,
+      pickaxe: 0, axe: 0, shovel: 0, bucket: 0, wood_sword: 1, stone_sword: 0, bow: 0, battle_axe: 0, diamond_sword: 0, arrow: 6,
+      bone: 0, rotten_flesh: 0, gunpowder: 0, porkchop: 0, beef: 0, leather: 0, string: 0, coin: 0,
+      enchant_speed: 0, enchant_luck: 0, enchant_guard: 0
     };
-    let tiles = {};
-    let mobs = {};
-    let worldState = { time: "day", weather: "clear" };
+    const saved = loadBackpack();
+    let inventory = saved?.inventory || { ...starterInventory };
+    let stats = saved?.stats || { health: 100, xp: 0, level: 1, mined: 0, placed: 0, kills: 0, bossKills: 0, quests: {} };
+    let joined = false, position = { x: 50, y: 48 }, keys = new Set(), selectedTool = "hand", selectedWeapon = "fists", selectedBlock = "grass", actionMode = "place";
+    let tiles = {}, mobs = {}, worldState = { time: "day", weather: "clear" };
+    let lastMove = 0, lastMobDamage = 0;
 
-    let offlineState = {
-      players: {},
-      world: { tiles: {}, mobs: {}, state: { time: "day", weather: "clear" } }
-    };
+    let offlineState = { players: {}, world: { tiles: {}, mobs: {}, state: { time: "day", weather: "clear" } } };
     const dbCallbacks = {};
 
     function dbOnValue(path, callback) {
       dbCallbacks[path] = callback;
       if (!isOffline) {
-        try {
-          onValue(ref(db, path), snap => {
-            if (!isOffline) callback(snap.val());
-          }, err => {
-            isOffline = true;
-            callback(getOfflineVal(path));
-          });
-        } catch (e) {
-          isOffline = true;
-          callback(getOfflineVal(path));
-        }
-      } else {
-        callback(getOfflineVal(path));
-      }
+        try { onValue(ref(db, path), snap => { if (!isOffline) callback(snap.val()); }, () => { isOffline = true; callback(getOfflineVal(path)); }); }
+        catch (e) { isOffline = true; callback(getOfflineVal(path)); }
+      } else callback(getOfflineVal(path));
     }
-
     function getOfflineVal(path) {
       if (path === "players") return offlineState.players;
       if (path === "world/tiles") return offlineState.world.tiles;
@@ -661,316 +480,189 @@
       if (path === "world/state") return offlineState.world.state;
       return null;
     }
-
     function triggerOfflineUpdates(path) {
       if (dbCallbacks[path]) dbCallbacks[path](getOfflineVal(path));
-      if (path.startsWith("players") && dbCallbacks["players"]) dbCallbacks["players"](offlineState.players);
+      if (path.startsWith("players") && dbCallbacks.players) dbCallbacks.players(offlineState.players);
       if (path.startsWith("world/tiles") && dbCallbacks["world/tiles"]) dbCallbacks["world/tiles"](offlineState.world.tiles);
       if (path.startsWith("world/mobs") && dbCallbacks["world/mobs"]) dbCallbacks["world/mobs"](offlineState.world.mobs);
       if (path.startsWith("world/state") && dbCallbacks["world/state"]) dbCallbacks["world/state"](offlineState.world.state);
     }
-
     async function dbSet(path, value) {
-      if (!isOffline) {
-        try {
-          await set(ref(db, path), value);
-          return;
-        } catch (e) {
-          isOffline = true;
-        }
-      }
-      if (path.startsWith("players/")) {
-        offlineState.players[path.split("/")[1]] = value;
-      } else if (path === "world/tiles") {
-        offlineState.world.tiles = value;
-      } else if (path.startsWith("world/tiles/")) {
-        offlineState.world.tiles[path.split("/")[2]] = value;
-      } else if (path === "world/state") {
-        offlineState.world.state = value;
-      } else if (path === "world/mobs") {
-        offlineState.world.mobs = value;
-      } else if (path.startsWith("world/mobs/")) {
-        offlineState.world.mobs[path.split("/")[2]] = value;
-      }
+      if (!isOffline) { try { await set(ref(db, path), value); return; } catch (e) { isOffline = true; } }
+      const parts = path.split("/");
+      if (path.startsWith("players/")) offlineState.players[parts[1]] = value;
+      else if (path === "world/tiles") offlineState.world.tiles = value;
+      else if (path.startsWith("world/tiles/")) offlineState.world.tiles[parts[2]] = value;
+      else if (path === "world/state") offlineState.world.state = value;
+      else if (path === "world/mobs") offlineState.world.mobs = value;
+      else if (path.startsWith("world/mobs/")) offlineState.world.mobs[parts[2]] = value;
       triggerOfflineUpdates(path);
     }
-
     async function dbUpdate(path, value) {
-      if (!isOffline) {
-        try {
-          await update(ref(db, path), value);
-          return;
-        } catch (e) {
-          isOffline = true;
-        }
-      }
-      if (path === "world") {
-        if (value.tiles) offlineState.world.tiles = value.tiles;
-        if (value.mobs) offlineState.world.mobs = value.mobs;
-        if (value.state) offlineState.world.state = value.state;
-      } else if (path === "world/mobs") {
-        Object.assign(offlineState.world.mobs, value);
-      } else if (path === "world/state") {
-        Object.assign(offlineState.world.state, value);
-      } else if (path.startsWith("world/mobs/")) {
-        const id = path.split("/")[2];
-        if (!offlineState.world.mobs[id]) offlineState.world.mobs[id] = {};
-        Object.assign(offlineState.world.mobs[id], value);
-      }
+      if (!isOffline) { try { await update(ref(db, path), value); return; } catch (e) { isOffline = true; } }
+      if (path === "world") { if (value.tiles) offlineState.world.tiles = value.tiles; if (value.mobs) offlineState.world.mobs = value.mobs; if (value.state) offlineState.world.state = value.state; }
+      else if (path === "world/mobs") Object.assign(offlineState.world.mobs, value);
+      else if (path === "world/state") Object.assign(offlineState.world.state, value);
+      else if (path.startsWith("world/mobs/")) { const id = path.split("/")[2]; offlineState.world.mobs[id] = { ...(offlineState.world.mobs[id] || {}), ...value }; }
       triggerOfflineUpdates(path);
     }
-
     async function dbRemove(path) {
-      if (!isOffline) {
-        try {
-          await remove(ref(db, path));
-          return;
-        } catch (e) {
-          isOffline = true;
-        }
-      }
-      if (path.startsWith("players/")) {
-        delete offlineState.players[path.split("/")[1]];
-      } else if (path.startsWith("world/mobs/")) {
-        delete offlineState.world.mobs[path.split("/")[2]];
-      }
+      if (!isOffline) { try { await remove(ref(db, path)); return; } catch (e) { isOffline = true; } }
+      if (path.startsWith("players/")) delete offlineState.players[path.split("/")[1]];
+      else if (path.startsWith("world/mobs/")) delete offlineState.world.mobs[path.split("/")[2]];
       triggerOfflineUpdates(path);
     }
 
-    function showNote(message) {
-      const note = document.getElementById("note");
-      note.textContent = message;
-      note.classList.add("show");
-      clearTimeout(showNote.timer);
-      showNote.timer = setTimeout(() => note.classList.remove("show"), 1800);
-    }
-
-    function cleanName(name) {
-      return String(name || "")
-        .replace(/[^a-zA-Z0-9_ -]/g, "")
-        .replace(/\s+/g, " ")
-        .trim()
-        .slice(0, 20);
-    }
-
+    function showNote(message) { const note = $("note"); note.textContent = message; note.classList.add("show"); clearTimeout(showNote.timer); showNote.timer = setTimeout(() => note.classList.remove("show"), 1900); }
+    function cleanName(name) { return String(name || "").replace(/[^a-zA-Z0-9_ -]/g, "").replace(/\s+/g, " ").trim().slice(0, 20); }
     function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
     function tileKey(x, y) { return `${x}_${y}`; }
-    function escapeHtml(value) {
-      return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
-    }
+    function escapeHtml(value) { return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;"); }
+    function chance(n) { return Math.random() < n; }
+
+    function loadBackpack() { try { return JSON.parse(localStorage.getItem("bpw_backpack_v2") || "null"); } catch { return null; } }
+    function saveBackpack() { localStorage.setItem("bpw_backpack_v2", JSON.stringify({ inventory, stats })); showNote("Backpack saved on this device."); }
 
     function defaultTile(x, y) {
-      if (y === 0 && x > 14 && x < 19) return "water";
-      if (y === 0 && x > 18) return "sand";
-      if (y === 0 && x < 4) return "snow";
-      if (y === 0) return "grass";
-      if (y < 3) return "dirt";
+      const surface = Math.floor(1.6 + Math.sin(x / 2.5) * 1.1 + Math.cos(x / 4) * 0.8);
+      if (y < surface) return "empty";
+      if (y === surface && x === 5) return "wood";
+      if (y === surface - 1 && x === 5) return "leaves";
+      if (y === surface && x > 14 && x < 19) return "water";
+      if (y === surface && x > 18) return "sand";
+      if (y === surface && x < 4) return "snow";
+      if (y === surface) return "grass";
+      if (y < surface + 3) return "dirt";
+      if (y > 5 && chance(0.05)) return "diamond";
+      if (y > 4 && chance(0.08)) return "gold";
+      if (y === 7 && x > 10 && x < 14) return "lava";
       return "stone";
     }
-
-    function buildDefaultTiles() {
-      const seeded = {};
-      for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) seeded[tileKey(x, y)] = defaultTile(x, y);
-      }
-      return seeded;
-    }
-
+    function buildDefaultTiles() { const seeded = {}; for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) seeded[tileKey(x, y)] = defaultTile(x, y); seeded[tileKey(3, 1)] = "chest"; seeded[tileKey(20, 1)] = "chest"; return seeded; }
     async function seedWorld() {
-      if (!isOffline) {
-        try {
-          const snap = await get(ref(db, "world/tiles"));
-          if (snap.exists()) return;
-        } catch (e) {
-          isOffline = true;
-        }
-      }
-      offlineState.world.tiles = buildDefaultTiles();
-      await dbUpdate("world", { tiles: buildDefaultTiles(), state: { time: "day", weather: "clear" } });
+      if (!isOffline) { try { const snap = await get(ref(db, "world/tiles")); if (snap.exists()) return; } catch { isOffline = true; } }
+      const seeded = buildDefaultTiles();
+      offlineState.world.tiles = seeded;
+      await dbUpdate("world", { tiles: seeded, state: { time: "day", weather: "clear" }, mobs: {} });
     }
-
-    async function resetTerrain() {
-      await dbUpdate("world", { tiles: buildDefaultTiles(), mobs: {}, state: { time: "day", weather: "clear" } });
-      showNote("Terrain reset. Weather cleared.");
-    }
+    async function resetTerrain() { await dbUpdate("world", { tiles: buildDefaultTiles(), mobs: {}, state: { time: "day", weather: "clear" } }); showNote("Terrain reset. Treasure chests restored."); }
 
     function renderTiles() {
       tileLayer.innerHTML = "";
-      for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-          const key = tileKey(x, y);
-          const type = tiles[key] || defaultTile(x, y);
-          const tile = document.createElement("button");
-          tile.type = "button";
-          tile.className = `tile ${type}`;
-          tile.title = `${type} block`;
-          tile.dataset.x = x;
-          tile.dataset.y = y;
-          tile.addEventListener("click", () => useTile(x, y, type));
-          tileLayer.appendChild(tile);
-        }
+      for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+        const key = tileKey(x, y), type = tiles[key] || defaultTile(x, y);
+        const tile = document.createElement("button");
+        tile.type = "button"; tile.className = `tile ${type}`; tile.title = type === "chest" ? "Treasure chest" : `${type} block`;
+        tile.dataset.x = x; tile.dataset.y = y;
+        tile.addEventListener("click", () => useTile(x, y, type));
+        tileLayer.appendChild(tile);
       }
     }
 
     async function useTile(x, y, type) {
       if (!joined) { showNote("Join the world first."); return; }
       const key = tileKey(x, y);
-      if (selectedTool === "hand") {
+      if (type === "chest") { await openChest(key, x, y); return; }
+      if (actionMode === "place") {
         if ((inventory[selectedBlock] || 0) <= 0) { showNote(`No ${selectedBlock} blocks left.`); return; }
-        inventory[selectedBlock] -= 1;
+        if (type !== "empty") { showNote("Mine that spot first, then place a block."); return; }
+        inventory[selectedBlock] -= 1; stats.placed += 1;
         await dbSet(`world/tiles/${key}`, selectedBlock);
-        showNote(`Placed ${selectedBlock}.`);
+        burstAtTile(x, y, "place"); showNote(`Placed ${selectedBlock}.`);
       } else {
         if (type === "empty") { showNote("Nothing to collect there."); return; }
-        inventory[type] = (inventory[type] || 0) + 1;
+        if (!canMine(type)) return;
+        inventory[type] = (inventory[type] || 0) + 1; stats.mined += 1; addXp(type === "diamond" ? 4 : type === "gold" ? 3 : 1);
         await dbSet(`world/tiles/${key}`, "empty");
-        showNote(`${selectedTool} collected ${type}.`);
+        burstAtTile(x, y, "mine"); showNote(`${selectedTool} collected ${type}.`);
       }
-      renderInventory();
-      syncMe();
+      completeQuests(); renderAll(); syncMe();
+    }
+
+    function canMine(type) {
+      if (["stone", "gold", "diamond"].includes(type) && selectedTool !== "pickaxe") { showNote("Use a pickaxe for stone, gold, and diamond."); return false; }
+      if (["wood", "leaves"].includes(type) && !["axe", "hand"].includes(selectedTool)) { showNote("Use an axe or hand for wood and leaves."); return false; }
+      if (["sand", "snow", "dirt", "grass"].includes(type) && !["shovel", "hand"].includes(selectedTool)) { showNote("Use a shovel or hand for soft blocks."); return false; }
+      if (["water", "lava"].includes(type) && selectedTool !== "bucket") { showNote("Use a bucket for liquids."); return false; }
+      return true;
+    }
+    async function openChest(key, x, y) {
+      const rewards = ["gold", "diamond", "arrow", "wood", "brick", "coin"];
+      for (let i = 0; i < 4; i++) { const item = rewards[Math.floor(Math.random() * rewards.length)]; inventory[item] = (inventory[item] || 0) + (item === "coin" ? 5 : 1); }
+      await dbSet(`world/tiles/${key}`, "empty");
+      burstAtTile(x, y, "chest"); addXp(5); renderAll(); syncMe(); showNote("Treasure chest opened! Loot added.");
     }
 
     function renderTools() {
       toolGrid.innerHTML = tools.map(tool => {
         const owned = tool === "hand" || (inventory[tool] || 0) > 0;
-        const active = tool === selectedTool ? "active" : "";
-        const disabled = owned ? "" : "disabled style='opacity:0.45; cursor:not-allowed;'";
-        return `<button class="item-btn ${active}" data-tool="${tool}" ${disabled}>${tool}</button>`;
+        return `<button class="item-btn ${tool === selectedTool ? "active" : ""}" data-tool="${tool}" ${owned ? "" : "disabled"}>${tool}</button>`;
       }).join("");
-      
-      toolGrid.querySelectorAll("[data-tool]").forEach(button => button.addEventListener("click", () => {
-        selectedTool = button.dataset.tool;
-        renderTools();
-      }));
+      toolGrid.querySelectorAll("[data-tool]").forEach(button => button.addEventListener("click", () => { selectedTool = button.dataset.tool; actionMode = "mine"; renderAll(); }));
     }
-
     function renderWeapons() {
       weaponGrid.innerHTML = weapons.map(weapon => {
         const owned = weapon.id === "fists" || (inventory[weapon.id] || 0) > 0;
         const arrowsOk = weapon.id !== "bow" || (inventory.arrow || 0) > 0;
-        const disabled = (!owned || !arrowsOk) ? "disabled" : "";
         const label = weapon.id === "bow" ? `${weapon.label} (${inventory.arrow || 0} arrows)` : weapon.label;
-        return `<button class="item-btn ${weapon.id === selectedWeapon ? "active" : ""}" data-weapon="${weapon.id}" ${disabled}>${label}<br>Damage ${weapon.damage}</button>`;
+        return `<button class="item-btn ${weapon.id === selectedWeapon ? "active" : ""}" data-weapon="${weapon.id}" ${(!owned || !arrowsOk) ? "disabled" : ""}>${label}<br>Damage ${weapon.damage}</button>`;
       }).join("");
-      weaponGrid.querySelectorAll("[data-weapon]").forEach(button => button.addEventListener("click", () => {
-        selectedWeapon = button.dataset.weapon;
-        renderWeapons();
-      }));
+      weaponGrid.querySelectorAll("[data-weapon]").forEach(button => button.addEventListener("click", () => { selectedWeapon = button.dataset.weapon; renderWeapons(); }));
     }
-
     function renderBlocks() {
-      blockGrid.innerHTML = blockTypes.map(block => `<button class="item-btn ${block === selectedBlock ? "active" : ""}" data-block="${block}">${block}</button>`).join("");
-      blockGrid.querySelectorAll("[data-block]").forEach(button => button.addEventListener("click", () => {
-        selectedBlock = block.dataset.block;
-        selectedTool = "hand";
-        renderBlocks();
-        renderTools();
-      }));
+      blockGrid.innerHTML = blockTypes.map(block => `<button class="item-btn ${block === selectedBlock ? "active" : ""}" data-block="${block}">${block} (${inventory[block] || 0})</button>`).join("");
+      blockGrid.querySelectorAll("[data-block]").forEach(button => button.addEventListener("click", () => { selectedBlock = button.dataset.block; selectedTool = "hand"; actionMode = "place"; renderAll(); }));
     }
-
     function renderInventory() {
-      renderWeapons();
-      renderTools();
-      inventoryGrid.innerHTML = Object.entries(inventory).map(([item, count]) => `<div class="stat"><span>${item}</span><span>${count}</span></div>`).join("");
+      inventoryGrid.innerHTML = Object.entries(inventory).filter(([, count]) => count !== 0).sort().map(([item, count]) => `<div class="stat"><span>${item}</span><span>${count}</span></div>`).join("");
     }
-
-    function playerData() {
-      return {
-        name: cleanName(gamerTagInput.value),
-        character: characterSelect.value,
-        x: Math.round(position.x),
-        y: Math.round(position.y),
-        inventory,
-        lastSeen: Date.now()
-      };
+    function renderHud() {
+      healthText.textContent = Math.round(stats.health); healthBar.style.width = `${clamp(stats.health, 0, 100)}%`;
+      const next = xpForNext(); xpText.textContent = `${stats.xp} / ${next}`; xpBar.style.width = `${clamp((stats.xp / next) * 100, 0, 100)}%`;
+      levelText.textContent = stats.level; coinText.textContent = inventory.coin || 0; modeText.textContent = actionMode === "place" ? "Place" : "Mine";
     }
-
-    async function syncMe() {
-      if (joined) await dbSet(`players/${myId}`, playerData());
+    function renderQuests() {
+      questGrid.innerHTML = quests.map(q => {
+        const progress = clamp(stats[q.stat] || 0, 0, q.need), done = stats.quests[q.id];
+        return `<div class="quest ${done ? "done" : ""}">${done ? "✅" : "⬜"} ${q.label}<br><span class="tiny">${progress}/${q.need} — Reward: ${Object.entries(q.reward).map(([k,v]) => `${v} ${k}`).join(", ")}</span></div>`;
+      }).join("");
     }
+    function renderAll() { renderTools(); renderWeapons(); renderBlocks(); renderInventory(); renderHud(); renderQuests(); }
 
+    function playerData() { return { name: cleanName(gamerTagInput.value), character: characterSelect.value, x: Math.round(position.x), y: Math.round(position.y), health: Math.round(stats.health), level: stats.level, lastSeen: Date.now() }; }
+    async function syncMe() { if (joined) await dbSet(`players/${myId}`, playerData()); }
     async function joinWorld() {
       const name = cleanName(gamerTagInput.value);
       if (!name) { showNote("Enter a gamer tag first. No real names."); return; }
-      localStorage.setItem("bpw_name", name);
-      localStorage.setItem("bpw_character", characterSelect.value);
-      gamerTagInput.value = name;
-      joined = true;
-
-      let el = stage.querySelector(`.player[data-id="${myId}"]`);
-      if (!el) {
-        el = document.createElement("div");
-        el.className = `player ${characterSelect.value} local`;
-        el.dataset.id = myId;
-        el.style.left = `${position.x}%`;
-        el.style.top = `${position.y}%`;
-        el.innerHTML = `<div class="player-name">${escapeHtml(name)}</div><div class="head"></div><div class="body"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div>`;
-        stage.appendChild(el);
-      }
-
+      localStorage.setItem("bpw_name", name); localStorage.setItem("bpw_character", characterSelect.value); gamerTagInput.value = name; joined = true;
+      if (stats.health <= 0) stats.health = 100;
       await dbSet(`players/${myId}`, playerData());
-      if (!isOffline) {
-        try {
-          await onDisconnect(ref(db, `players/${myId}`)).remove();
-        } catch (e) {}
-      }
-      stage.focus();
-      showNote(`${name} joined the world!`);
+      if (!isOffline) { try { await onDisconnect(ref(db, `players/${myId}`)).remove(); } catch {} }
+      stage.focus(); renderAll(); showNote(`${name} joined the world!`);
     }
-
-    async function leaveWorld() {
-      if (joined) await dbRemove(`players/${myId}`);
-      joined = false;
-      const localEl = stage.querySelector(`.player[data-id="${myId}"]`);
-      if (localEl) localEl.remove();
-      showNote("You left the world.");
-    }
+    async function leaveWorld() { if (joined) await dbRemove(`players/${myId}`); joined = false; const localEl = stage.querySelector(`.player[data-id="${myId}"]`); if (localEl) localEl.remove(); showNote("You left the world."); }
 
     function renderPlayers(players) {
       const now = Date.now();
       const active = Object.entries(players || {}).filter(([, p]) => p && p.name && now - Number(p.lastSeen || 0) < 45000);
-      playerList.innerHTML = active.length ? active.map(([id, p]) => `<li>${escapeHtml(p.name)}${id === myId ? " ⭐" : ""}</li>`).join("") : "<li>No players yet</li>";
-      
+      playerList.innerHTML = active.length ? active.map(([id, p]) => `<li>${escapeHtml(p.name)}${id === myId ? " ⭐" : ""} — L${p.level || 1} ❤${p.health ?? 100}</li>`).join("") : "<li>No players yet</li>";
       const currentIds = new Set(active.map(([id]) => id));
-      stage.querySelectorAll(".player").forEach(el => {
-        if (!currentIds.has(el.dataset.id)) el.remove();
-      });
-
+      stage.querySelectorAll(".player").forEach(el => { if (!currentIds.has(el.dataset.id)) el.remove(); });
       for (const [id, p] of active) {
         let el = stage.querySelector(`.player[data-id="${id}"]`);
-        if (!el) {
-          el = document.createElement("div");
-          el.className = `player ${p.character || "steve"} ${id === myId ? "local" : ""}`;
-          el.dataset.id = id;
-          stage.appendChild(el);
-        }
-        if (!el.classList.contains(p.character || "steve")) {
-          el.className = `player ${p.character || "steve"} ${id === myId ? "local" : ""}`;
-        }
-        if (id !== myId || !joined) {
-          el.style.left = `${clamp(p.x, 3, 97)}%`;
-          el.style.top = `${clamp(p.y, 18, 95)}%`;
-        }
-        if (!el.innerHTML || el.querySelector(".player-name").textContent !== p.name) {
-          el.innerHTML = `<div class="player-name">${escapeHtml(p.name)}</div><div class="head"></div><div class="body"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div>`;
-        }
+        if (!el) { el = document.createElement("div"); el.dataset.id = id; stage.appendChild(el); }
+        el.className = `player ${p.character || "steve"} ${id === myId ? "local" : ""}`;
+        el.style.left = `${clamp(p.x, 3, 97)}%`; el.style.top = `${clamp(p.y, 18, 95)}%`;
+        el.innerHTML = `<div class="player-name">${escapeHtml(p.name)} L${p.level || 1}</div><div class="head"></div><div class="body"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div>`;
       }
     }
-
     function renderMobs() {
       stage.querySelectorAll(".mob").forEach(el => el.remove());
       for (const [mobId, mob] of Object.entries(mobs || {})) {
         const el = document.createElement("button");
-        el.type = "button";
-        el.className = `mob ${mob.type}`;
-        el.style.left = `${mob.x}%`;
-        el.style.top = `${mob.y}%`;
-        el.title = `${mob.type} - ${mob.health || 1} health`;
+        el.type = "button"; el.className = `mob ${mob.type}`; el.style.left = `${mob.x}%`; el.style.top = `${mob.y}%`; el.title = `${mob.type} - ${mob.health || 1} health`;
         el.innerHTML = `<div class="mob-health">❤ ${mob.health || 1}</div><div class="head"></div><div class="body"></div>`;
-        el.addEventListener("click", event => {
-          event.stopPropagation();
-          attackMob(mobId, mob);
-        });
+        el.addEventListener("click", event => { event.stopPropagation(); attackMob(mobId, mob); });
         stage.appendChild(el);
       }
     }
@@ -979,173 +671,133 @@
       if (!joined) { showNote("Join the world before fighting mobs."); return; }
       const weapon = weapons.find(item => item.id === selectedWeapon) || weapons[0];
       if (weapon.id !== "fists" && (inventory[weapon.id] || 0) <= 0) { showNote(`You do not have a ${weapon.label}.`); return; }
-      if (weapon.id === "bow") {
-        if ((inventory.arrow || 0) <= 0) { showNote("You are out of arrows."); return; }
-        inventory.arrow -= 1;
-      }
-      const damage = weapon.damage + (inventory.enchant_luck ? 1 : 0);
+      if (weapon.id === "bow") { if ((inventory.arrow || 0) <= 0) { showNote("You are out of arrows."); return; } inventory.arrow -= 1; shootArrowTo(mob); }
+      const bonus = Math.floor((stats.level - 1) / 2) + (inventory.enchant_luck ? 1 : 0);
+      const damage = weapon.damage + bonus;
       const newHealth = Number(mob.health || 1) - damage;
-      if (newHealth > 0) {
-        await dbUpdate(`world/mobs/${mobId}`, { health: newHealth });
-        showNote(`${weapon.label} hit ${mob.type} for ${damage}.`);
-      } else {
-        await dbRemove(`world/mobs/${mobId}`);
-        giveMobLoot(mob.type);
-        showNote(`Defeated ${mob.type}! Loot added to inventory.`);
+      markMobHit(mobId); floatingText(mob.x, mob.y - 8, `-${damage}`);
+      if (newHealth > 0) { await dbUpdate(`world/mobs/${mobId}`, { health: newHealth }); showNote(`${weapon.label} hit ${mob.type} for ${damage}.`); }
+      else {
+        await dbRemove(`world/mobs/${mobId}`); giveMobLoot(mob.type); stats.kills += 1; if (mob.type === "dragon") stats.bossKills += 1; addXp(mobStats[mob.type]?.xp || 2); completeQuests(); burstAtPercent(mob.x, mob.y, "mob"); showNote(`Defeated ${mob.type}! Loot and XP added.`);
       }
-      renderInventory();
-      syncMe();
+      renderAll(); syncMe(); saveSilent();
     }
-
     function giveMobLoot(type) {
-      const stats = mobStats[type] || { loot: ["bone"] };
-      const lootCount = inventory.enchant_luck ? 2 : 1;
-      for (let i = 0; i < lootCount; i++) {
-        const loot = stats.loot[Math.floor(Math.random() * stats.loot.length)];
-        inventory[loot] = (inventory[loot] || 0) + 1;
-      }
+      const mob = mobStats[type] || { loot: ["bone"] }, lootCount = inventory.enchant_luck ? 3 : 1;
+      for (let i = 0; i < lootCount; i++) { const loot = mob.loot[Math.floor(Math.random() * mob.loot.length)]; inventory[loot] = (inventory[loot] || 0) + (loot === "coin" ? 2 : 1); }
+    }
+    function addXp(amount) { stats.xp += amount; while (stats.xp >= xpForNext()) { stats.xp -= xpForNext(); stats.level += 1; stats.health = 100; showNote(`Level up! You are now level ${stats.level}. Health restored.`); } }
+    function xpForNext() { return 10 + (stats.level - 1) * 6; }
+    function completeQuests() {
+      for (const q of quests) if (!stats.quests[q.id] && (stats[q.stat] || 0) >= q.need) { stats.quests[q.id] = true; for (const [item, count] of Object.entries(q.reward)) inventory[item] = (inventory[item] || 0) + count; showNote(`Quest complete: ${q.label}! Reward added.`); }
     }
 
-    async function spawnMobs() {
-      const types = ["zombie", "skeleton", "creeper", "pig", "cow"];
+    async function spawnMobs(count = 6, boss = false) {
+      const types = boss ? ["dragon"] : ["zombie", "skeleton", "creeper", "pig", "cow", "spider"];
       const next = {};
-      for (let i = 0; i < 5; i++) {
-        const type = types[Math.floor(Math.random() * types.length)];
-        next[`mob_${Date.now()}_${i}`] = {
-          type,
-          health: mobStats[type].health,
-          x: 10 + Math.random() * 80,
-          y: 48 + Math.random() * 36
-        };
-      }
-      await dbUpdate("world/mobs", next);
-      showNote("Mobs spawned.");
+      for (let i = 0; i < count; i++) { const type = types[Math.floor(Math.random() * types.length)]; next[`mob_${Date.now()}_${Math.random().toString(16).slice(2)}_${i}`] = { type, health: mobStats[type].health, x: 8 + Math.random() * 84, y: 47 + Math.random() * 39, targetX: 8 + Math.random() * 84, targetY: 47 + Math.random() * 39 }; }
+      await dbUpdate("world/mobs", next); showNote(boss ? "Boss dragon spawned!" : "Mobs spawned.");
     }
+    async function moveMobs() {
+      if (!joined || !Object.keys(mobs || {}).length) return;
+      const updates = {};
+      for (const [id, mob] of Object.entries(mobs)) {
+        let tx = mob.targetX ?? position.x, ty = mob.targetY ?? position.y;
+        const hostile = !["pig", "cow"].includes(mob.type);
+        if (hostile && distance(mob.x, mob.y, position.x, position.y) < 28) { tx = position.x; ty = position.y; }
+        else if (chance(0.05)) { tx = 8 + Math.random() * 84; ty = 47 + Math.random() * 39; }
+        const speed = mob.type === "dragon" ? 0.7 : mob.type === "spider" ? 0.55 : 0.35;
+        const nx = clamp(Number(mob.x) + Math.sign(tx - mob.x) * speed, 4, 96), ny = clamp(Number(mob.y) + Math.sign(ty - mob.y) * speed, 42, 93);
+        updates[id] = { ...mob, x: nx, y: ny, targetX: tx, targetY: ty };
+        if (hostile && distance(nx, ny, position.x, position.y) < 5) damagePlayer(mobStats[mob.type]?.damage || 3);
+      }
+      if (Object.keys(updates).length) await dbSet("world/mobs", updates);
+    }
+    function distance(ax, ay, bx, by) { return Math.hypot(ax - bx, ay - by); }
+    function damagePlayer(amount) {
+      const now = Date.now(); if (now - lastMobDamage < 1000) return; lastMobDamage = now;
+      const reduced = inventory.enchant_guard ? Math.ceil(amount / 2) : amount;
+      stats.health = clamp(stats.health - reduced, 0, 100); markPlayerHit(); floatingText(position.x, position.y - 10, `-${reduced}❤`);
+      if (stats.health <= 0) { stats.health = 100; position = { x: 50, y: 48 }; inventory.coin = Math.max(0, (inventory.coin || 0) - 5); showNote("You got knocked out! Respawned at camp. Lost up to 5 coins."); }
+      renderAll(); syncMe(); saveSilent();
+    }
+    function nearestMob() { return Object.entries(mobs || {}).map(([id, mob]) => ({ id, mob, d: distance(position.x, position.y, mob.x, mob.y) })).sort((a,b) => a.d - b.d)[0]; }
 
     function applyWorldState() {
-      const isNight = worldState.time === "night";
-      stage.classList.toggle("night", isNight);
-      timeStatus.textContent = isNight ? "Night" : "Day";
-      weatherStatus.textContent = worldState.weather ? worldState.weather[0].toUpperCase() + worldState.weather.slice(1) : "Clear";
+      const time = worldState.time || "day";
+      stage.classList.toggle("night", time === "night"); stage.classList.toggle("sunset", time === "sunset");
+      document.body.classList.toggle("night-bg", time === "night"); document.body.classList.toggle("sunset-bg", time === "sunset");
+      timeStatus.textContent = time[0].toUpperCase() + time.slice(1);
+      weatherStatus.textContent = (worldState.weather || "clear")[0].toUpperCase() + (worldState.weather || "clear").slice(1);
       renderWeather(worldState.weather || "clear");
     }
-
     function renderWeather(weather) {
-      weatherLayer.innerHTML = "";
-      if (weather === "clear") return;
-      const count = weather === "snow" ? 45 : 70;
-      for (let i = 0; i < count; i++) {
-        const drop = document.createElement("span");
-        drop.className = weather === "snow" ? "weather-snow" : "weather-drop";
-        drop.style.left = `${Math.random() * 100}%`;
-        drop.style.animationDuration = `${0.8 + Math.random() * 1.8}s`;
-        drop.style.animationDelay = `${Math.random() * 2}s`;
-        weatherLayer.appendChild(drop);
-      }
+      weatherLayer.innerHTML = ""; if (weather === "clear") return;
+      const count = weather === "snow" ? 45 : weather === "meteor" ? 30 : 70;
+      for (let i = 0; i < count; i++) { const drop = document.createElement("span"); drop.className = weather === "snow" ? "weather-snow" : weather === "meteor" ? "weather-ember" : "weather-drop"; drop.style.left = `${Math.random() * 100}%`; drop.style.animationDuration = `${0.7 + Math.random() * 1.8}s`; drop.style.animationDelay = `${Math.random() * 2}s`; weatherLayer.appendChild(drop); }
     }
+    async function setWeather(weather) { await dbUpdate("world/state", { weather }); showNote(weather === "clear" ? "Weather cleared." : `${weather} started.`); }
+    async function setTime(time) { await dbUpdate("world/state", { time }); showNote(`${time[0].toUpperCase() + time.slice(1)} time set.`); if (time === "night") spawnMobs(5); }
+    async function toggleDayNight() { await setTime(worldState.time === "night" ? "day" : "night"); }
 
-    async function setWeather(weather) {
-      await dbUpdate("world/state", { weather });
-      showNote(weather === "clear" ? "Weather cleared. Sun and clouds are back." : `${weather} started.`);
-    }
-
-    async function toggleDayNight() {
-      const nextTime = worldState.time === "night" ? "day" : "night";
-      await dbUpdate("world/state", { time: nextTime });
-      showNote(nextTime === "night" ? "Night has fallen." : "Daytime is back.");
-      if (nextTime === "night") spawnMobs();
-    }
-
-    let lastMove = 0;
     async function movePlayer(dx, dy) {
       if (!joined) return;
-      const speed = inventory.enchant_speed ? 1.8 : 1.3;
-      position.x = clamp(position.x + dx * speed, 3, 97);
-      position.y = clamp(position.y + dy * speed, 18, 95);
-      const now = Date.now();
-      if (now - lastMove > 70) {
-        lastMove = now;
-        syncMe();
-      }
+      const speed = inventory.enchant_speed ? 1.85 : 1.25;
+      position.x = clamp(position.x + dx * speed, 3, 97); position.y = clamp(position.y + dy * speed, 18, 95);
+      const localEl = stage.querySelector(`.player[data-id="${myId}"]`); if (localEl) { localEl.style.left = `${position.x}%`; localEl.style.top = `${position.y}%`; }
+      const now = Date.now(); if (now - lastMove > 70) { lastMove = now; syncMe(); }
     }
-
     function loop() {
       let dx = 0, dy = 0;
-      if (keys.has("arrowleft") || keys.has("a")) dx -= 1;
-      if (keys.has("arrowright") || keys.has("d")) dx += 1;
-      if (keys.has("arrowup") || keys.has("w")) dy -= 1;
-      if (keys.has("arrowdown") || keys.has("s")) dy += 1;
-      if (dx || dy) {
-        movePlayer(dx, dy);
-        const localEl = stage.querySelector(`.player[data-id="${myId}"]`);
-        if (localEl) {
-          localEl.style.left = `${clamp(position.x, 3, 97)}%`;
-          localEl.style.top = `${clamp(position.y, 18, 95)}%`;
-        }
-      }
+      if (keys.has("arrowleft") || keys.has("a")) dx -= 1; if (keys.has("arrowright") || keys.has("d")) dx += 1; if (keys.has("arrowup") || keys.has("w")) dy -= 1; if (keys.has("arrowdown") || keys.has("s")) dy += 1;
+      if (dx || dy) movePlayer(dx, dy);
       requestAnimationFrame(loop);
     }
 
-    window.addEventListener("keydown", event => {
-      if (document.activeElement === gamerTagInput) return;
-      const key = event.key.toLowerCase();
-      if (["arrowleft", "arrowright", "arrowup", "arrowdown", "w", "a", "s", "d"].includes(key)) {
-        keys.add(key);
-        event.preventDefault();
-      }
-    });
-    window.addEventListener("keyup", event => {
-      if (document.activeElement === gamerTagInput) return;
-      keys.delete(event.key.toLowerCase());
-    });
+    function createStars() { const stars = $("stars"); stars.innerHTML = ""; for (let i = 0; i < 70; i++) { const s = document.createElement("span"); s.className = "star"; s.style.left = `${Math.random()*100}%`; s.style.top = `${Math.random()*45}%`; stars.appendChild(s); } }
+    function floatingText(x, y, text) { const f = document.createElement("div"); f.className = "floating"; f.style.left = `${x}%`; f.style.top = `${y}%`; f.textContent = text; particleLayer.appendChild(f); setTimeout(() => f.remove(), 950); }
+    function burstAtPercent(x, y) { for (let i = 0; i < 12; i++) { const s = document.createElement("span"); s.className = "spark"; s.style.left = `${x}%`; s.style.top = `${y}%`; s.style.setProperty("--dx", `${-30 + Math.random()*60}px`); s.style.setProperty("--dy", `${-35 + Math.random()*50}px`); particleLayer.appendChild(s); setTimeout(() => s.remove(), 650); } }
+    function burstAtTile(x, y) { burstAtPercent(((x + .5) / width) * 100, 58 + ((y + .5) / height) * 38); }
+    function markMobHit(id) { const el = stage.querySelector(`.mob[title^="${mobs[id]?.type}"]`); if (el) { el.classList.add("hit"); setTimeout(() => el.classList.remove("hit"), 150); } }
+    function markPlayerHit() { const el = stage.querySelector(`.player[data-id="${myId}"]`); if (el) { el.classList.add("hit"); setTimeout(() => el.classList.remove("hit"), 250); } }
+    function shootArrowTo(mob) { const arrow = document.createElement("span"); arrow.className = "arrow"; arrow.style.left = `${position.x}%`; arrow.style.top = `${position.y - 5}%`; const angle = Math.atan2((mob.y - 5) - (position.y - 5), mob.x - position.x) * 180 / Math.PI; arrow.style.transform = `rotate(${angle}deg)`; projectileLayer.appendChild(arrow); setTimeout(() => { arrow.style.left = `${mob.x}%`; arrow.style.top = `${mob.y - 5}%`; }, 20); setTimeout(() => arrow.remove(), 360); }
+    function saveSilent() { localStorage.setItem("bpw_backpack_v2", JSON.stringify({ inventory, stats })); }
 
-    document.querySelectorAll("[data-move]").forEach(button => button.addEventListener("click", () => {
-      const dir = button.dataset.move;
-      if (dir === "up") movePlayer(0, -4);
-      if (dir === "down") movePlayer(0, 4);
-      if (dir === "left") movePlayer(-4, 0);
-      if (dir === "right") movePlayer(4, 0);
-      const localEl = stage.querySelector(`.player[data-id="${myId}"]`);
-      if (localEl) {
-        localEl.style.left = `${clamp(position.x, 3, 97)}%`;
-        localEl.style.top = `${clamp(position.y, 18, 95)}%`;
-      }
-    }));
-
+    document.querySelectorAll("[data-move]").forEach(button => button.addEventListener("click", () => { const dir = button.dataset.move; if (dir === "up") movePlayer(0, -4); if (dir === "down") movePlayer(0, 4); if (dir === "left") movePlayer(-4, 0); if (dir === "right") movePlayer(4, 0); }));
     document.querySelectorAll("[data-craft]").forEach(button => button.addEventListener("click", () => {
       const craft = button.dataset.craft;
       if (craft === "wood_pickaxe" && inventory.wood >= 3) { inventory.wood -= 3; inventory.pickaxe += 1; showNote("Crafted a wood pickaxe."); }
       else if (craft === "stone_pickaxe" && inventory.wood >= 2 && inventory.stone >= 3) { inventory.wood -= 2; inventory.stone -= 3; inventory.pickaxe += 1; showNote("Crafted a stone pickaxe."); }
-      else if (craft === "axe" && inventory.wood >= 2 && inventory.stone >= 2) { inventory.wood -= 2; inventory.stone -= 2; inventory.axe += 1; inventory.battle_axe += 1; showNote("Crafted an axe."); }
+      else if (craft === "axe" && inventory.wood >= 2 && inventory.stone >= 2) { inventory.wood -= 2; inventory.stone -= 2; inventory.axe += 1; inventory.battle_axe += 1; showNote("Crafted a battle axe."); }
       else if (craft === "shovel" && inventory.wood >= 1 && inventory.stone >= 1) { inventory.wood -= 1; inventory.stone -= 1; inventory.shovel += 1; showNote("Crafted a shovel."); }
       else if (craft === "bucket" && inventory.wood >= 2 && inventory.stone >= 2) { inventory.wood -= 2; inventory.stone -= 2; inventory.bucket += 1; showNote("Crafted a bucket."); }
       else if (craft === "sword" && inventory.wood >= 1 && inventory.stone >= 2) { inventory.wood -= 1; inventory.stone -= 2; inventory.stone_sword += 1; showNote("Crafted a stone sword."); }
-      else if (craft === "bow" && inventory.wood >= 3 && inventory.bone >= 1) { inventory.wood -= 3; inventory.bone -= 1; inventory.bow += 1; inventory.arrow += 6; showNote("Crafted a bow and 6 arrows."); }
+      else if (craft === "bow" && inventory.wood >= 3 && inventory.bone >= 1) { inventory.wood -= 3; inventory.bone -= 1; inventory.bow += 1; inventory.arrow += 8; showNote("Crafted a bow and 8 arrows."); }
+      else if (craft === "diamond_sword" && inventory.wood >= 1 && inventory.diamond >= 2) { inventory.wood -= 1; inventory.diamond -= 2; inventory.diamond_sword += 1; showNote("Crafted a diamond sword."); }
       else { showNote("Not enough materials."); return; }
-      renderInventory();
-      syncMe();
+      renderAll(); syncMe(); saveSilent();
     }));
-
     document.querySelectorAll("[data-enchant]").forEach(button => button.addEventListener("click", () => {
       const enchant = button.dataset.enchant;
       if (inventory[`enchant_${enchant}`]) { showNote("You already have that enchantment."); return; }
-      if (inventory.stone < 2 || inventory.gold < 1) { showNote("Need 2 stone and 1 gold to enchant."); return; }
-      inventory.stone -= 2;
-      inventory.gold -= 1;
-      inventory[`enchant_${enchant}`] = 1;
-      showNote(enchant === "speed" ? "Swift Mining enabled." : "Lucky Loot enabled.");
-      renderInventory();
-      syncMe();
+      if (enchant === "guard") { if (inventory.gold < 3 || inventory.diamond < 1) { showNote("Need 3 gold and 1 diamond for Guardian Heart."); return; } inventory.gold -= 3; inventory.diamond -= 1; }
+      else { if (inventory.stone < 2 || inventory.gold < 1) { showNote("Need 2 stone and 1 gold to enchant."); return; } inventory.stone -= 2; inventory.gold -= 1; }
+      inventory[`enchant_${enchant}`] = 1; showNote(enchant === "speed" ? "Swift Mining enabled." : enchant === "luck" ? "Lucky Loot enabled." : "Guardian Heart enabled."); renderAll(); syncMe(); saveSilent();
     }));
 
-    joinBtn.addEventListener("click", joinWorld);
-    leaveBtn.addEventListener("click", leaveWorld);
-    toggleTimeBtn.addEventListener("click", toggleDayNight);
-    clearWeatherBtn.addEventListener("click", () => setWeather("clear"));
-    rainWeatherBtn.addEventListener("click", () => setWeather("rain"));
-    snowWeatherBtn.addEventListener("click", () => setWeather("snow"));
-    spawnMobsBtn.addEventListener("click", spawnMobs);
-    resetWorldBtn.addEventListener("click", resetTerrain);
+    window.addEventListener("keydown", event => {
+      if (document.activeElement === gamerTagInput) return;
+      const key = event.key.toLowerCase();
+      if (["arrowleft", "arrowright", "arrowup", "arrowdown", "w", "a", "s", "d"].includes(key)) { keys.add(key); event.preventDefault(); }
+      if (key === " ") { const near = nearestMob(); if (near) attackMob(near.id, near.mob); event.preventDefault(); }
+    });
+    window.addEventListener("keyup", event => keys.delete(event.key.toLowerCase()));
+
+    joinBtn.addEventListener("click", joinWorld); leaveBtn.addEventListener("click", leaveWorld); saveBtn.addEventListener("click", saveBackpack);
+    $("toggleTimeBtn").addEventListener("click", toggleDayNight); $("sunsetBtn").addEventListener("click", () => setTime("sunset"));
+    $("clearWeatherBtn").addEventListener("click", () => setWeather("clear")); $("rainWeatherBtn").addEventListener("click", () => setWeather("rain")); $("snowWeatherBtn").addEventListener("click", () => setWeather("snow")); $("meteorWeatherBtn").addEventListener("click", () => setWeather("meteor"));
+    $("spawnMobsBtn").addEventListener("click", () => spawnMobs(6)); $("bossBtn").addEventListener("click", () => spawnMobs(1, true)); $("resetWorldBtn").addEventListener("click", resetTerrain);
+    $("placeModeBtn").addEventListener("click", () => { actionMode = "place"; selectedTool = "hand"; renderAll(); }); $("mineModeBtn").addEventListener("click", () => { actionMode = "mine"; renderAll(); });
     gamerTagInput.addEventListener("keydown", e => { if (e.key === "Enter") joinWorld(); });
     characterSelect.addEventListener("change", () => { localStorage.setItem("bpw_character", characterSelect.value); syncMe(); });
 
@@ -1153,19 +805,14 @@
     dbOnValue("world/tiles", snap => { tiles = snap || {}; renderTiles(); });
     dbOnValue("world/mobs", snap => { mobs = snap || {}; renderMobs(); });
     dbOnValue("world/state", snap => { worldState = snap || { time: "day", weather: "clear" }; applyWorldState(); });
-
     window.addEventListener("beforeunload", () => { if (joined) dbRemove(`players/${myId}`); });
-    setInterval(() => { if (joined) syncMe(); }, 10000);
-    setInterval(() => { if (joined) toggleDayNight(); }, 120000);
 
-    seedWorld();
-    renderTools();
-    renderWeapons();
-    renderBlocks();
-    renderInventory();
-    loop();
+    setInterval(() => { if (joined) syncMe(); }, 10000);
+    setInterval(() => { if (joined) moveMobs(); }, 900);
+    setInterval(() => { if (joined && worldState.time === "night" && Object.keys(mobs || {}).length < 10) spawnMobs(2); }, 45000);
+    setInterval(() => { if (joined) toggleDayNight(); }, 180000);
+
+    createStars(); seedWorld(); renderAll(); loop();
   </script>
 </body>
 </html>
-
-```
