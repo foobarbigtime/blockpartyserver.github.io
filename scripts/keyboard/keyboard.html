@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Keyboard Files</title>
+  <style>
+    body {
+      font-family: "Courier New", monospace;
+      max-width: 760px;
+      margin: 40px auto;
+      padding: 20px;
+      line-height: 1.5;
+      background:
+        linear-gradient(45deg, #5b3a1e 25%, transparent 25%),
+        linear-gradient(-45deg, #5b3a1e 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #3f2815 75%),
+        linear-gradient(-45deg, transparent 75%, #3f2815 75%);
+      background-color: #6b4423;
+      background-size: 40px 40px;
+      color: #f3ffd8;
+    }
+
+    .card {
+      background: #4b7f2a;
+      border: 6px solid #2f4f1a;
+      border-radius: 0;
+      padding: 26px;
+      box-shadow: 10px 10px 0 #2b1a0d;
+    }
+
+    h1 {
+      margin-top: 0;
+      color: #e6ff9c;
+      text-shadow: 3px 3px 0 #2f4f1a;
+      letter-spacing: 1px;
+    }
+
+    p {
+      font-size: 1.05rem;
+    }
+
+    .file-list {
+      display: grid;
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    a.download {
+      display: block;
+      padding: 16px 18px;
+      background: #8b5a2b;
+      border: 5px solid #3f2815;
+      border-radius: 0;
+      color: #f3ffd8;
+      text-decoration: none;
+      font-weight: bold;
+      box-shadow: 6px 6px 0 #2f4f1a;
+    }
+
+    a.download:hover {
+      background: #a36a32;
+      transform: translate(2px, 2px);
+      box-shadow: 4px 4px 0 #2f4f1a;
+    }
+
+    .file-icon {
+      margin-right: 8px;
+    }
+
+    .note {
+      margin-top: 26px;
+      padding: 14px;
+      background: #2f4f1a;
+      border: 4px solid #1d3210;
+      font-size: 0.95rem;
+      color: #e6ff9c;
+    }
+
+    strong {
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Keyboard Files</h1>
+    <p>Click a block below to download the file.</p>
+
+    <div class="file-list">
+      <a class="download" href="keyboard.mp3" download><span class="file-icon">♪</span>Download keyboard.mp3</a>
+      <a class="download" href="keyboard.py" download><span class="file-icon">&lt;/&gt;</span>Download keyboard.py</a>
+      <a class="download" href="setup.py" download><span class="file-icon">⚙</span>Download setup.py</a>
+    </div>
+
+    <p class="note">
+      Place this page inside the <strong>scripts/keyboard</strong> folder with the files above.
+    </p>
+  </div>
+</body>
+</html>
