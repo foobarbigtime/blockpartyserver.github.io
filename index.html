@@ -21,7 +21,6 @@
     }
 
     * { box-sizing: border-box; }
-
     html { scroll-behavior: smooth; }
 
     body {
@@ -570,14 +569,17 @@
     }
   </style>
 </head>
+
 <body>
   <header class="topbar">
     <div class="brand">
       <div class="mini-block" aria-hidden="true"></div>
       <span>Block Party Server</span>
     </div>
+
     <nav aria-label="Main navigation">
       <a href="scripts/keyboard/keyboard.html">Keyboard Files</a>
+      <a href="https://games.dgrlabs.co" target="_blank" rel="noopener noreferrer">Text Adventures</a>
       <a href="world.html">Block World</a>
       <a href="#play">Mining Game</a>
       <a href="#adventure">Adventure</a>
@@ -589,14 +591,27 @@
 
   <main>
     <section class="hero" id="home">
-      <div class="cloud one" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-      <div class="cloud two" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-      <div class="cloud three" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="cloud one" aria-hidden="true">
+        <span></span><span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+
+      <div class="cloud two" aria-hidden="true">
+        <span></span><span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+
+      <div class="cloud three" aria-hidden="true">
+        <span></span><span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
 
       <div class="hero-card">
         <h1 class="pixel-text">Block Party Server</h1>
         <p>A fun, friendly, blocky world for building, exploring, and playing together. Grab your pickaxe, invite your friends, and start the adventure.</p>
+
         <a class="big-btn" href="world.html">Enter Block World</a>
+        <a class="big-btn" href="https://games.dgrlabs.co" target="_blank" rel="noopener noreferrer">Play Text Adventures</a>
         <a class="big-btn" href="scripts/keyboard/keyboard.html">Download Keyboard Files</a>
         <a class="big-btn" href="#play">Play Mining Game</a>
       </div>
@@ -632,16 +647,26 @@
             <h3>Creative Builds</h3>
             <p>Make castles, farms, secret bases, roller coasters, pixel art, and giant silly statues.</p>
           </article>
+
           <article class="card">
             <span class="badge">Explore</span>
             <h3>World Quests</h3>
             <p>Follow clues, discover hidden rooms, and unlock weekly challenges around spawn.</p>
           </article>
+
           <article class="card">
             <span class="badge">Team</span>
             <h3>Block Parties</h3>
             <p>Group events, treasure hunts, building contests, parkour races, and mini-game nights.</p>
           </article>
+
+          <article class="card">
+            <span class="badge">Classic</span>
+            <h3>Text Adventures</h3>
+            <p>Play classic terminal-style adventure games like Zork and Colossal Cave Adventure.</p>
+            <a class="small-btn" href="https://games.dgrlabs.co" target="_blank" rel="noopener noreferrer">Open Text Adventures</a>
+          </article>
+
           <article class="card">
             <span class="badge">Safe</span>
             <h3>Family Friendly</h3>
@@ -658,11 +683,13 @@
           <div class="game-area" aria-label="Clickable mining blocks game">
             <div class="block-grid" id="blockGrid"></div>
           </div>
+
           <aside class="scoreboard">
             <h3 class="pixel-text">Inventory</h3>
             <div class="score-line"><span>Score</span><span id="score">0</span></div>
             <div class="score-line"><span>Blocks Mined</span><span id="mined">0</span></div>
             <div class="score-line"><span>Rare Finds</span><span id="rare">0</span></div>
+
             <div class="inventory">
               <div class="slot" id="slotGrass">Grass: 0</div>
               <div class="slot" id="slotStone">Stone: 0</div>
@@ -671,6 +698,7 @@
               <div class="slot" id="slotGold">Gold: 0</div>
               <div class="slot" id="slotRedstone">Redstone: 0</div>
             </div>
+
             <p>Click blocks to mine them. Rare blocks are worth more. Hit reset to rebuild the world.</p>
             <button class="small-btn" type="button" onclick="resetGame()">Reset World</button>
           </aside>
@@ -711,13 +739,13 @@
             Block Party Realm is a private family-and-friends Minecraft Realm.
             To request an invite, ask a parent first and do not share personal information.
           </p>
+
           <p>
             The request button opens an email. Only include your Minecraft username,
             how you know someone from the Realm, and whether you play Java or Bedrock.
           </p>
 
-          <a class="big-btn"
-             href="mailto:foobarbigtime@proton.me?subject=Realm%20Invite%20Request">
+          <a class="big-btn" href="mailto:foobarbigtime@proton.me?subject=Realm%20Invite%20Request">
             Request Realm Invite
           </a>
 
@@ -776,27 +804,35 @@
     function buildGrid() {
       const grid = document.getElementById("blockGrid");
       grid.innerHTML = "";
+
       for (let i = 0; i < 48; i++) {
         const type = randomBlockType();
         const btn = document.createElement("button");
+
         btn.type = "button";
         btn.className = `block ${type.name}`;
         btn.setAttribute("aria-label", `Mine ${type.label} block`);
         btn.dataset.type = type.name;
         btn.onclick = event => mineBlock(event, btn);
+
         grid.appendChild(btn);
       }
     }
 
     function mineBlock(event, block) {
       if (block.classList.contains("broken")) return;
+
       const type = blockTypes.find(item => item.name === block.dataset.type);
+
       block.classList.add("broken");
       block.disabled = true;
+
       state.score += type.points;
       state.mined += 1;
       state.counts[type.name] += 1;
+
       if (type.rare) state.rare += 1;
+
       updateScoreboard();
       showNote(`+${type.points} ${type.label}!`);
       spawnParticles(event.clientX, event.clientY, type.name);
@@ -818,7 +854,9 @@
       state.score = 0;
       state.mined = 0;
       state.rare = 0;
+
       Object.keys(state.counts).forEach(key => state.counts[key] = 0);
+
       updateScoreboard();
       buildGrid();
       showNote("New world generated!");
@@ -826,8 +864,10 @@
 
     function showNote(message) {
       const note = document.getElementById("note");
+
       note.textContent = message;
       note.classList.add("show");
+
       window.clearTimeout(showNote.timeout);
       showNote.timeout = window.setTimeout(() => note.classList.remove("show"), 1800);
     }
@@ -843,6 +883,7 @@
       const rect = mob.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
+
       spawnParticles(centerX, centerY, "redstone");
 
       window.setTimeout(() => {
@@ -865,10 +906,12 @@
       const zone = mob.closest(".mob-zone");
       const zoneRect = zone.getBoundingClientRect();
       const mobRect = mob.getBoundingClientRect();
+
       const explosion = document.createElement("div");
       explosion.className = "explosion boom";
       explosion.style.left = `${mobRect.left - zoneRect.left + mobRect.width / 2 - 16}px`;
       explosion.style.top = `${mobRect.top - zoneRect.top + mobRect.height / 2 - 16}px`;
+
       zone.appendChild(explosion);
       window.setTimeout(() => explosion.remove(), 800);
     }
@@ -885,12 +928,14 @@
 
       for (let i = 0; i < 12; i++) {
         const particle = document.createElement("span");
+
         particle.className = "particle";
         particle.style.left = `${x}px`;
         particle.style.top = `${y}px`;
         particle.style.background = colorMap[typeName] || "#ffd84d";
         particle.style.setProperty("--x", `${Math.random() * 140 - 70}px`);
         particle.style.setProperty("--y", `${Math.random() * -120 - 20}px`);
+
         document.body.appendChild(particle);
         window.setTimeout(() => particle.remove(), 750);
       }
